@@ -1,0 +1,6 @@
+[submodule "third_party/repos/MetaStuff"]
+	path = third_party/repos/MetaStuff
+	url = https://github.com/eliasdaler/MetaStuff
+[submodule "third_party/repos/sol2"]
+	path = third_party/repos/sol2
+	url = https://github.com/ThePhD/sol2
