@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 2.8.12)
+#cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5.1)
+
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake 
 	${CMAKE_CURRENT_BINARY_DIR}/configure.h)
