@@ -3,5 +3,6 @@ mkdir -p build
 set -x
 cd build
 
-cmake .. -G "Ninja" -DBUILD_TESTS=ON &&  \
+cmake .. -G "Ninja" -DBUILD_TESTS=OFF &&  \
 cmake --build . --config Debug 
+./src/Example/MyApplication

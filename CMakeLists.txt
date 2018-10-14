@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.12.2)
 
 # CMake policies. 0025 needs to be before project(), so putting all there.
 # Use AppleClang instead of Clang on Apple
@@ -17,6 +17,11 @@ endif()
 if(POLICY CMP0054)
 	cmake_policy(SET CMP0054 NEW)
 endif()
+
+if(POLICY CMP0048)
+	cmake_policy(SET CMP0048 NEW)
+endif()
+
 
 # Configuration fails on < 3.4 if only C++ is enabled (CheckFunctionExists
 # macro called from FindX11). Also, Android needs C for compiling some glue

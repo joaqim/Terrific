@@ -1,4 +1,10 @@
-project(TerrificSystem)
+cmake_minimum_required(VERSION 3.12.2)
+
+if (POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif (POLICY CMP0048)
+
+project(TerrificSystem VERSION 1 LANGUAGES CXX)
 
 set(TerrificSystem_SRCS SerializeClass.cpp)
 set(TerrificSystem_HEADERS SerializeClass.h)

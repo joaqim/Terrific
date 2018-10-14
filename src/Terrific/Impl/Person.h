@@ -13,34 +13,25 @@ struct Person {
     // template <>
     // auto meta::registerMembers<Person>();
 
-    void setAge(int a)
-    {
-        //std::cout << "Age is set by calling setter!\n";
-        if (a >= 0 && a < 128) { // sorry, if you're older than 128
-            age = a;
-        } else {
-            std::cout << "Can't set age. " << a << " is out of allowed range\n";
-        }
+  void setAge(int a) {
+    age = a;
     }
 
-    int getAge() const {
-        std::cout << "Got age with getter!\n";
-        return age;
-    }
+  int getAge() const {
+    return age;
+  }
 
-    void setName(const std::string& name)
-    {
-        //std::cout << "Name is set by calling setter!\n";
-        this->name = name;
-    }
+  void setName(const std::string& name)
+  {
+    this->name = name;
+  }
 
-    const std::string& getName() const
-    {
-        std::cout << "Got name with getter!\n";
-        return name;
-    }
+  const std::string& getName() const
+  {
+    return name;
+  }
 
-    int age;
+  int age;
     std::string name;
     float salary;
     std::unordered_map<std::string, std::vector<MovieInfo>> favouriteMovies;
