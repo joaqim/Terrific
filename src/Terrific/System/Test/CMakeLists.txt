@@ -1,4 +1,3 @@
-#cmake_minimum_required(VERSION 3.12.2)
 cmake_minimum_required(VERSION 3.5.1)
 
 if (POLICY CMP0048)
@@ -14,7 +13,7 @@ configure_file(
 
 if(false)
 
-  add_executable(SystemTest SerializationTest.cpp)
+  add_executable(SystemTest Test.cpp)
 
   target_link_libraries(SystemTest Terrific TerrificSystem)
   target_include_directories(SystemTest PUBLIC ${TERRIFIC_INCLUDE_DIR}
@@ -29,21 +28,26 @@ else()
 
   enable_testing()
 
-  corrade_add_test(SystemTest SerializationTest.cpp
-	  LIBRARIES Terrific TerrificSystem
-	  )
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/safe_reference.lua
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+  corrade_add_test(SystemTest
+    SafeReference.cpp
+    #SerializationTest.cpp
+	  LIBRARIES Terrific TerrificSystem# ${LUA_LIBRARIES} sol2
+	)
 
-  target_include_directories(
-	  SystemTest
-	  PRIVATE 
-	  ${CMAKE_CURRENT_BINARY_DIR}
-	  ${TERRIFIC_INCLUDE_DIR}
-	  )
+target_include_directories(
+	SystemTest
+	PRIVATE 
+	${CMAKE_CURRENT_BINARY_DIR}
+	${TERRIFIC_INCLUDE_DIR}
+	)
 
 
-  # List of Tests
-  set_target_properties(
-	  SystemTest
-	  PROPERTIES FOLDER "Terrific/System/Test")
+# List of Tests
+set_target_properties(
+	SystemTest
+	PROPERTIES FOLDER "Terrific/System/Test")
+set_target_properties(SystemTest PROPERTIES COMPILE_FLAGS "-w -Wunused-variable -Wmissing-prototypes") # Suppress Warnings
 
 endif()

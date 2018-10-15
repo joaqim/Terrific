@@ -1,4 +1,3 @@
-#cmake_minimum_required(VERSION 3.12.2)
 cmake_minimum_required(VERSION 3.5.1)
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
@@ -16,7 +15,11 @@ set_directory_properties(PROPERTIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake_modules/")
 
 add_subdirectory(Terrific)
-add_subdirectory(Example)
 
 # Terrific include dir for superprojects
 set(TERRIFIC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "")
+
+
+if(!BUILD_TESTS)
+  add_subdirectory(Example)
+endif()

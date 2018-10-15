@@ -23,8 +23,11 @@ list(APPEND LIBRARIES
   Magnum::Primitives
   Magnum::AnyImageImporter
   Magnum::TgaImporter
-
   MagnumPlugins::PngImporter
+
+  Terrific::Geometry
+  Terrific::Math
+  Terrific::GL
   )
 
 if(NOT CORRADE_TARGET_ANDROID)

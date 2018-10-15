@@ -4,3 +4,7 @@
 [submodule "third_party/repos/sol2"]
 	path = third_party/repos/sol2
 	url = https://github.com/ThePhD/sol2
+	ignore = dirty
+[submodule "third_party/repos/EntityPlus"]
+	path = third_party/repos/EntityPlus
+	url = https://github.com/jaynus/EntityPlus

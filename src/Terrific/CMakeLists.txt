@@ -1,9 +1,9 @@
-#cmake_minimum_required(VERSION 2.8.12)
 cmake_minimum_required(VERSION 3.5.1)
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake 
 	${CMAKE_CURRENT_BINARY_DIR}/configure.h)
+
 
 set(Terrific_SRCS Impl/StringCast.cpp)
 set(Terrific_HEADERS 
@@ -28,8 +28,10 @@ if(NOT BUILD_STATIC OR BUILD_STATIC_PIC)
 endif()
 set_target_properties(TerrificObjects PROPERTIES FOLDER "Terrific")
 
+# Main Library
 add_library(Terrific ${SHARED_OR_STATIC} 
-	$<TARGET_OBJECTS:TerrificObjects>)
+	$<TARGET_OBJECTS:TerrificObjects>
+  )
 
 set_target_properties(Terrific PROPERTIES 
 	DEBUG_POSTFIX "-d" 
@@ -45,7 +47,11 @@ install(FILES ${Terrific_HEADERS} DESTINATION ${TERRIFIC_INCLUDE_INSTALL_DIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/configure.h DESTINATION ${TERRIFIC_INCLUDE_INSTALL_DIR})
 
 
+add_subdirectory(Math)
 add_subdirectory(System)
+add_subdirectory(Geometry)
+add_subdirectory(GL)
+
 if(BUILD_TESTS) 
 	#  add_subdirectory(Test) 
 endif()

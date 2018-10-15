@@ -1,10 +1,10 @@
 #include <iostream>
 
 #include <json.hpp>
-#include "Terrific/Impl/Person.h"
-#include "Terrific/Impl/JsonCast.h"
-#include "Terrific/Impl/MovieInfo.h"
-#include "Terrific/Impl/StringCast.cpp"
+#include <Terrific/Impl/Person.h>
+#include <Terrific/Impl/JsonCast.h>
+#include <Terrific/Impl/MovieInfo.h>
+#include <Terrific/Impl/StringCast.cpp>
 
 
 #include <Corrade/TestSuite/Tester.h>
