@@ -39,11 +39,11 @@ namespace Magnum {
  private:
     void draw(const Matrix4& transformationMatrix, SceneGraph::Camera3D &camera) override;
     GL::Mesh _mesh;
-    GL::Shader _phongShader;
+    Shaders::Phong _phongShader;
 
     GL::Buffer _vertexBuffer;
     GL::Buffer _indexBuffer;
-    GL::Buffer _normalBuffer;
+    GL::Buffer _normalsBuffer;
     GL::Buffer _colorBuffer;
   };
 }

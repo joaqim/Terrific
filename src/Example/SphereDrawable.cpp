@@ -1,5 +1,5 @@
 #include "SphereDrawable.h"
-
+#include <iostream>
 namespace Magnum {
 
 SphereDrawable::SphereDrawable(
@@ -11,8 +11,9 @@ SphereDrawable::SphereDrawable(
     std::vector<Color3> const &colors) : SceneGraph::Drawable3D{object, group} {
 
   _vertexBuffer.setData(vertices, GL::BufferUsage::StaticDraw);
+#define WITH_NORMALS
 #ifdef WITH_NORMALS
-  _normalBuffer.setData(normals, GL::BufferUsage::StaticDraw);
+  _normalsBuffer.setData(normals, GL::BufferUsage::StaticDraw);
 #endif
   _indexBuffer.setData(indices, GL::BufferUsage::StaticDraw);
 
@@ -25,8 +26,8 @@ SphereDrawable::SphereDrawable(
     UnsignedInt indexStart, indexEnd;
     if(indices.size() > 0) {
       std::tie(indexData, indexType, indexStart, indexEnd) = MeshTools::compressIndices(indices);
-      //std::cout << "Index size:  \t" << indices.size() << std::endl;
-      //std::cout << "Index Data size: "<< indexData.size() << std::endl;
+      std::cout << "Index size:  \t" << indices.size() << std::endl;
+      std::cout << "Index Data size: "<< indexData.size() << std::endl;
       _indexBuffer.setData(indexData, GL::BufferUsage::StaticDraw);
       _mesh.setIndexBuffer(_indexBuffer, 0, indexType, indexStart, indexEnd);
     }

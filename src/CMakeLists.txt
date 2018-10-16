@@ -20,6 +20,6 @@ add_subdirectory(Terrific)
 set(TERRIFIC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "")
 
 
-if(!BUILD_TESTS)
-  add_subdirectory(Example)
-endif()
+#if(!BUILD_TESTS)
+add_subdirectory(Example)
+#endif()

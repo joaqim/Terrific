@@ -45,6 +45,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 list(APPEND SOURCES
   main.cpp
   Application.cpp
+  SphereDrawable.cpp
   )
 
   # Corrade Resources

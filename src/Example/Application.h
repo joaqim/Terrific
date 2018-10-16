@@ -28,8 +28,12 @@ namespace Magnum {
     void mousePressEvent(MouseEvent& event) override;
     void mouseReleaseEvent(MouseEvent& event) override;
     void mouseMoveEvent(MouseMoveEvent& event) override;
+
+ private:
+    void CreateColors(std::size_t const count);
  private:
     SphericalVoronoi *_pSv;
+    std::vector<Color3> _colors;
  private:
     Scene3D _scene;
     SceneGraph::DrawableGroup3D _drawables;
