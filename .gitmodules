@@ -8,3 +8,6 @@
 [submodule "third_party/repos/EntityPlus"]
 	path = third_party/repos/EntityPlus
 	url = https://github.com/jaynus/EntityPlus
+[submodule "third_party/repos/FastNoiseSIMD"]
+	path = third_party/repos/FastNoiseSIMD
+	url = https://github.com/Auburns/FastNoiseSIMD

@@ -40,8 +40,6 @@ void HalfEdge::reset() {
   twin.reset();
 }
 
-
-
 BeachArc::BeachArc(std::shared_ptr<Cell> Cell_) : pCell(Cell_) {}
 
 std::shared_ptr<Cell> pCell;
@@ -55,14 +53,12 @@ bool BeachArc::operator< (const BeachArc& ba) const {
 }
 
 SiteEvent::SiteEvent(std::shared_ptr<Cell> Cell_)
-    : pCell(Cell_)
-  {
-    theta = pCell->point.theta;
+    : pCell(Cell_) {
+  theta = pCell->point.theta;
     phi = pCell->point.phi;
   }
 
-bool SiteEvent::operator< (const SiteEvent& right) const
-{
+bool SiteEvent::operator< (const SiteEvent& right) const {
   return (theta < right.theta) || (theta == right.theta && phi < right.phi);
 }
 
@@ -84,20 +80,13 @@ bool CircleEvent::operator< (const CircleEvent& ce) const {
   return theta < ce.theta;
 }
 
-bool compare_CircleEvent_priority::operator()(const std::shared_ptr<CircleEvent>& left, const std::shared_ptr<CircleEvent>& right) const
-{
-  //          return *left < *right; //NOTE: Not sure
+bool compare_CircleEvent_priority::operator()(const std::shared_ptr<CircleEvent>& left, const std::shared_ptr<CircleEvent>& right) const {
     return *right < *left;
-  }
+}
 
 void SphericalVoronoi::setDebugMode(bool debugMode) { this->debugMode = debugMode; }
 
-//const std::vector<HalfEdge_ptr>& SphericalVoronoi::getHalfEdges() const { return halfEdges; }
-//const std::vector<Vertex_ptr>& SphericalVoronoi::getVertices() const { return vertices; }
-//const std::vector<Cell_ptr>& SphericalVoronoi::getCells() const { return cells; }
-
-beach_type::const_iterator SphericalVoronoi::getPrevArcOnBeach(beach_type::const_iterator it) const
-{
+beach_type::const_iterator SphericalVoronoi::getPrevArcOnBeach(beach_type::const_iterator it) const {
   if (it != beach.begin())
   {
     return std::prev(it);
@@ -108,8 +97,7 @@ beach_type::const_iterator SphericalVoronoi::getPrevArcOnBeach(beach_type::const
   }
 }
 
-beach_type::const_iterator SphericalVoronoi::getNextArcOnBeach(beach_type::const_iterator it) const
-{
+beach_type::const_iterator SphericalVoronoi::getNextArcOnBeach(beach_type::const_iterator it) const {
   auto next = std::next(it);
   if (next == beach.end())
   {
@@ -119,14 +107,12 @@ beach_type::const_iterator SphericalVoronoi::getNextArcOnBeach(beach_type::const
 }
 
 
-bool SphericalVoronoi::isArcOnBeach(const BeachArc_ptr& arc) const
-{
+bool SphericalVoronoi::isArcOnBeach(const BeachArc_ptr& arc) const {
   return std::find(beach.begin(), beach.end(), arc) != beach.end();
 }
 
 
-void SphericalVoronoi::addNewSiteEvent(const SiteEvent& event)
-{
+void SphericalVoronoi::addNewSiteEvent(const SiteEvent& event) {
   /*
     using namespace std;
     auto it = lower_bound(siteEventQueue.begin(), siteEventQueue.end(), event);
@@ -136,8 +122,7 @@ void SphericalVoronoi::addNewSiteEvent(const SiteEvent& event)
   std::push_heap(siteEventQueue.begin(), siteEventQueue.end(), std::greater_equal<>{});
 }
 
-void SphericalVoronoi::addNewCircleEvent(const std::shared_ptr<CircleEvent>& event)
-{
+void SphericalVoronoi::addNewCircleEvent(const std::shared_ptr<CircleEvent>& event) {
   /*
     using namespace std;
     auto it = lower_bound(circleEventQueue.begin(), circleEventQueue.end(), event, compare_CircleEvent_priority());
@@ -212,9 +197,8 @@ struct IndexedDirection
 }
 
 
-SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3>& directions)
-    : scanLine(), nbSteps(0), debugMode(false)
-{
+SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3>& directions, bool const debugMode_)
+    : scanLine(), nbSteps(0), debugMode(debugMode_) {
   using namespace std;
 
   std::vector<std::pair<int, Vector3>> sortedDirections;
@@ -257,14 +241,11 @@ SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3>& directions)
   }
 }
 
-bool SphericalVoronoi::isFinished() const
-{
-  //return siteEventQueue.size() == 0 && circleEventQueue.size() == 0;
+bool SphericalVoronoi::isFinished() const {
   return siteEventQueue.size() == 0 && getCircleEventQueueSize() == 0;
 }
 
-void SphericalVoronoi::dumpBeachState(std::ostream& stream)
-{
+void SphericalVoronoi::dumpBeachState(std::ostream& stream) {
   using namespace std;
 
   stream << "  beach [";
@@ -286,8 +267,7 @@ void SphericalVoronoi::dumpBeachState(std::ostream& stream)
   stream << "]" << endl;
 }
 
-void SphericalVoronoi::step(float maxDeltaXi)
-{
+void SphericalVoronoi::step(float maxDeltaXi) {
   using namespace std;
 
   if (!isFinished())
@@ -296,10 +276,8 @@ void SphericalVoronoi::step(float maxDeltaXi)
 
     SV_DEBUG(cout << "step " << nbSteps << " " << scanLine.xi);
 
-    //if (siteEventQueue.size() > 0 && (circleEventQueue.size() == 0 || siteEventQueue[0].theta < circleEventQueue[0]->theta))
     if (siteEventQueue.size() > 0 && (getCircleEventQueueSize() == 0 || siteEventQueue[0].theta < getCircleEvent()->theta))
     {
-      //auto se = siteEventQueue[0];
       std::pop_heap(siteEventQueue.begin(), siteEventQueue.end(), std::greater_equal<>{});
       auto se = siteEventQueue.back();
       if (se.theta <= nextXi)
@@ -308,7 +286,6 @@ void SphericalVoronoi::step(float maxDeltaXi)
         SV_DEBUG(cout << " -> " << scanLine.xi << endl);
         SV_DEBUG(dumpBeachState(cout));
         handleSiteEvent(se);
-        //siteEventQueue.erase(siteEventQueue.begin());
         siteEventQueue.pop_back();
         SV_DEBUG(dumpBeachState(cout));
       }
@@ -318,10 +295,8 @@ void SphericalVoronoi::step(float maxDeltaXi)
         SV_DEBUG(cout << " -> " << scanLine.xi << endl);
       }
     }
-    //else if (circleEventQueue.size() > 0)
     else if (getCircleEventQueueSize() > 0)
     {
-      // auto ce = circleEventQueue[0];
       auto ce = getCircleEvent();
       if (ce->theta <= nextXi)
       {
@@ -329,7 +304,6 @@ void SphericalVoronoi::step(float maxDeltaXi)
         SV_DEBUG(cout << " -> " << scanLine.xi << endl);
         SV_DEBUG(dumpBeachState(cout));
         handleCircleEvent(ce);
-        //circleEventQueue.erase(circleEventQueue.begin());
         popCircleEvent();
         SV_DEBUG(dumpBeachState(cout));
       }
@@ -359,8 +333,7 @@ void SphericalVoronoi::step(float maxDeltaXi)
   }
 }
 
-void SphericalVoronoi::solve(std::function<void(int)> cb)
-{
+void SphericalVoronoi::solve(std::function<void(int)> cb) {
   int nbSteps = 0;
   while (!isFinished())
   {
@@ -373,8 +346,7 @@ void SphericalVoronoi::solve(std::function<void(int)> cb)
   }
 }
 
-void SphericalVoronoi::finializeGraph()
-{
+void SphericalVoronoi::finializeGraph() {
   using namespace std;
 
   SV_DEBUG(cout << "Finalize graph" << endl);
@@ -401,8 +373,7 @@ void SphericalVoronoi::finializeGraph()
   }
 }
 
-void SphericalVoronoi::cleanupMiddleVertices()
-{
+void SphericalVoronoi::cleanupMiddleVertices() {
   using namespace std;
 
   SV_DEBUG(cout << "cleanupMiddleVertices" << endl);
@@ -442,8 +413,7 @@ void SphericalVoronoi::cleanupMiddleVertices()
   }
 }
 
-void SphericalVoronoi::duplicateHalfEdges()
-{
+void SphericalVoronoi::duplicateHalfEdges() {
   using namespace std;
 
   SV_DEBUG(cout << "duplicateHalfEdges" << endl);
@@ -462,8 +432,7 @@ void SphericalVoronoi::duplicateHalfEdges()
   copy(newHalfEdges.begin(), newHalfEdges.end(), back_inserter(halfEdges));
 }
 
-void SphericalVoronoi::bindHalfEdgesToCells()
-{
+void SphericalVoronoi::bindHalfEdgesToCells() {
   using namespace std;
 
   SV_DEBUG(cout << "bindHalfEdgesToCells" << endl);
@@ -480,7 +449,6 @@ void SphericalVoronoi::bindHalfEdgesToCells()
     vector<Cell_ptr> common;
     std::set_intersection(e->start->cells.begin(), e->start->cells.end(), e->end->cells.begin(), e->end->cells.end(), back_inserter(common));
     assert(common.size() == 2);
-    //if(common.size() == 2) common.pop_back();
     Cell_ptr c0 = common[0];
     Vector3 d0 = e->start->point.position - c0->point.position;
     Vector3 d1 = e->end->point.position - c0->point.position;
@@ -535,10 +503,7 @@ void SphericalVoronoi::bindHalfEdgesToCells()
   }
 }
 
-
-
-bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, float xi, Point& oPoint)
-{
+bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, float xi, Point& oPoint) {
   float theta1 = arc1.pCell->point.theta;
   float phi1 = arc1.pCell->point.phi;
 
@@ -618,30 +583,27 @@ bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& ar
       }
     }
 
-    bool SphericalVoronoi::intersectWithNextArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const
-    {
-        auto itNextArc = getNextArcOnBeach(itArc);
-        if (itNextArc == itArc)
-        {
-            return false;
-        }
-        bool result = arcsIntersection(**itArc, **itNextArc, xi, oPoint);
+bool SphericalVoronoi::intersectWithNextArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const {
+  auto itNextArc = getNextArcOnBeach(itArc);
+  if (itNextArc == itArc)
+  {
+    return false;
+  }
+  bool result = arcsIntersection(**itArc, **itNextArc, xi, oPoint);
         return result;
     }
 
-    bool SphericalVoronoi::intersectWithPrevArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const
-    {
-        auto itPrevArc = getPrevArcOnBeach(itArc);
-        if (itPrevArc == itArc)
-        {
-            return false;
-        }
-        bool result = arcsIntersection(**itPrevArc, **itArc, xi, oPoint);
+bool SphericalVoronoi::intersectWithPrevArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const {
+  auto itPrevArc = getPrevArcOnBeach(itArc);
+  if (itPrevArc == itArc)
+  {
+    return false;
+  }
+  bool result = arcsIntersection(**itPrevArc, **itArc, xi, oPoint);
         return result;
     }
 
-void SphericalVoronoi::handleSiteEvent(SiteEvent& event)
-{
+void SphericalVoronoi::handleSiteEvent(SiteEvent& event) {
   using namespace std;
 
   SV_DEBUG(cout << "HandleSiteEvent " << event << endl);
@@ -775,8 +737,7 @@ void SphericalVoronoi::handleSiteEvent(SiteEvent& event)
         }
     }
 
-void SphericalVoronoi::handleCircleEvent(const CircleEvent_ptr& event)
-{
+void SphericalVoronoi::handleCircleEvent(const CircleEvent_ptr& event) {
   using namespace std;
 
   SV_DEBUG(cout << "HandleCircleEvent " << *event << endl);
@@ -891,8 +852,7 @@ void SphericalVoronoi::handleCircleEvent(const CircleEvent_ptr& event)
   }
 }
 
-Point SphericalVoronoi::thetaToPoint(float theta, bool positive, float xi, float theta1, float phi1)
-{
+Point SphericalVoronoi::thetaToPoint(float theta, bool positive, float xi, float theta1, float phi1) {
   float delta_phi = 0;
 
   if (theta != 0)
@@ -907,8 +867,7 @@ Point SphericalVoronoi::thetaToPoint(float theta, bool positive, float xi, float
   return p;
 }
 
-Point SphericalVoronoi::phiToPoint(float phi, float xi, float theta1, float phi1)
-{
+Point SphericalVoronoi::phiToPoint(float phi, float xi, float theta1, float phi1) {
   if (theta1 >= xi)
   {
     assert(0);
@@ -922,10 +881,6 @@ Point SphericalVoronoi::phiToPoint(float phi, float xi, float theta1, float phi1
     return Point(theta, phi);
   }
 }
-
-
-
-
 
 }
 }

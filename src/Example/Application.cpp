@@ -10,12 +10,17 @@
 
 #include <Magnum/Primitives/Cube.h>
 
+#include <Corrade/Utility/Debug.h>
+#include <Corrade/Utility/Assert.h>
+
+#define SEEDED
+
 namespace Magnum {
 
-std::vector<Vector3> generatePoints(size_t count) {
+std::vector<Vector3> generatePoints(size_t const count) {
   std::vector<Vector3> points;
 
-  std::random_device rd;
+  std::random_device const rd;
 #ifdef SEEDED
   std::mt19937 rng(145);
 #else
@@ -28,15 +33,20 @@ std::vector<Vector3> generatePoints(size_t count) {
 
 
 
-  std::uniform_real_distribution<> heightDistribution(-1, 1);
+  std::uniform_real_distribution<> heightDistribution(-1.f, 1.f);
   std::uniform_real_distribution<> angleDistribution(0, 2 * M_PI);
 
+  using Magnum::Math::asin;
+  using Magnum::Math::cos;
+  using Magnum::Math::sin;
+  using Magnum::Math::Rad;
+
   for (size_t i = 0; i < count; i++) {
-    double z = heightDistribution(rng);
-    double phi = angleDistribution(rng);
-    double theta = asin(z);
-    double x = cos(theta) * cos(phi);
-    double y = cos(theta) * sin(phi);
+    float z = heightDistribution(rng);
+    auto const phi = Rad<float>{static_cast<float>(angleDistribution(rng))};
+    auto theta = asin(z);
+    float x = cos(theta) * cos(phi);
+    float y = cos(theta) * sin(phi);
 
     points.push_back(Vector3(x, y, z));
   }
@@ -61,6 +71,7 @@ Vector3 CalculateSurfaceNormal (Vector3 const &p1, Vector3 const &p2, Vector3 co
   n.z() = u.x() * v.y() - u.y() * v.x();
   return n;
 }
+
 using Terrific::Geometry::HalfEdge_ptr;
 using Terrific::Geometry::Cell_ptr;
 using Terrific::Geometry::Vertex_ptr;
@@ -73,16 +84,72 @@ struct compare_edges {// : public std::binary_function<sv::half_edge_ptr, sv::ha
   }
 };
 
+Bitmap *CreateTexture(UnsignedInt const width, UnsignedInt height) {
+  Bitmap *image = new Bitmap(width, height);
+  float widthFactor = 1.0 / width;
+  double heightFactor = 1.0 / height;
+  //Color3 baseColor = Color.FromArgb(255, 127, 35, 7);
+  // Color3 baseColor{255, 127, 35};
+  Color3 baseColor{127, 127, 127};
 
+  using NoiseType = FastNoiseSIMD::NoiseType;
+
+  auto *gen = FastNoiseSIMD::NewFastNoiseSIMD();
+  gen->SetSeed(144);
+  //gen->SetNoiseType(NoiseType::Perlin);
+  gen->SetFractalOctaves(3);
+  //gen->SetPerturbAmp(3.0f/4.0f);
+  gen->SetFractalLacunarity(3.f);
+  //gen->SetNoiseType(NoiseType::Cellular);
+
+  float *noiseSet = gen->GetSimplexSet( 0, 0, 0, width, height, 1, 1.f);
+
+  auto index = UnsignedInt{0};
+  for(UnsignedInt x{0};x<width; x++) {
+    for(UnsignedInt y{0};y<height; y++) {
+      float dX = x / float(width);
+      float dY = y / float(height);
+
+      float *noise = &noiseSet[index++];
+      float red = (baseColor.r() * noise[0]) + baseColor.r();
+      float green = (baseColor.g() * noise[1]) + baseColor.g();
+      float blue = (baseColor.b() * noise[2]) + baseColor.b();
+      image->SetPixel(x, y, red, green, blue);
+    }
+  }
+
+#if 0
+  SimplexNoise generator = new SimplexNoise(seed: -5000);
+  for (int x = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y) {
+      double dX = x / (double)width;
+      double dY = y / (double)height;
+      /* noise range is clamped -1 to 1 */
+      double noise = generator.PerlinNoise(dX, dY, octaves: 3, persistence: 3.0f / 4.0f, lacunarity: 3f);
+      int blueHue = (int)(baseColor.B * noise) + baseColor.B;
+      int redHue = (int)(baseColor.R * noise) + baseColor.R;
+      int greenHue = (int)(baseColor.G * noise) + baseColor.G;
+      Color3 col = Color.FromArgb(baseColor.A, redHue, greenHue, blueHue);
+      image.SetPixel(x, y, col);
+    }
+  }
+#endif
+
+  return image;
+}
+
+inline
 void smoothLaplacian(std::vector<Cell_ptr> &cells, std::vector<Vertex_ptr> &vertices, std::size_t const count=1) {
   for(std::size_t i{0};i<count;i++) {
     for(auto &c : cells) {
       c->point.position = std::accumulate(c->halfEdges.begin(),c->halfEdges.end(), Vector3{0}, compare_edges())/c->halfEdges.size();
     }
+
     for(auto &v : vertices) {
       Vector3 const p1 = v->point.position;
       Vector3 const sum_of_adj_verts = ((std::accumulate(v->halfEdges.begin(),v->halfEdges.end() , Vector3{0}, compare_edges())));
       v->point.position = sum_of_adj_verts/float(v->halfEdges.size());
+
       /*
         if(p1 == v->point.position) {
         break;
@@ -99,6 +166,21 @@ inline void addVerticesAndNormals(Vector3 const &p1, Vector3 const &p2, Vector3 
   std::fill_n(std::back_inserter(normals), 3, CalculateSurfaceNormal(p1, p2, p3));
 }
 
+inline Vector2 getUVCoords(Vector3 const &p) {
+  auto const phi = Magnum::Math::atan(p.x() / p.y());
+  auto const theta = Magnum::Math::acos(p.normalized().z());
+
+  auto const u = Magnum::Math::sin(theta)*Magnum::Math::cos(phi);
+  auto const v = Magnum::Math::sin(theta)*Magnum::Math::sin(phi);
+#if 1
+  //#ifdef DEBUG
+  CORRADE_ASSERT(-1 <= u <= 1, "Error: !(-1 <= u <= 1)", Vector2{});
+  CORRADE_ASSERT(-1 <= v <= 1, "Error: !(-1 <= v <= 1)", Vector2{});
+  CORRADE_ASSERT(Magnum::Math::pow<2>(u)+Magnum::Math::pow<2>(v) <= 1, "Error: !(u^2 + v^2 <= 1)", Vector2{});
+#endif
+  return Vector2{u, v};
+}
+
 inline void addVerticesAndNormals(Vector3 const &p1, Vector3 const &p2, Vector3 const &p3, std::vector<Vector3> &vertices, std::vector<Vector3> &normals, std::vector<Vector2> &uvs) {
   vertices.emplace_back(p1);
   vertices.emplace_back(p2);
@@ -106,11 +188,10 @@ inline void addVerticesAndNormals(Vector3 const &p1, Vector3 const &p2, Vector3 
 
   std::fill_n(std::back_inserter(normals), 3, CalculateSurfaceNormal(p1, p2, p3));
 
-  //uvs.emplace_back(getUVCoords(p1));
-  //uvs.emplace_back(getUVCoords(p2));
-  //uvs.emplace_back(getUVCoords(p3));
+  uvs.emplace_back(getUVCoords(p1));
+  uvs.emplace_back(getUVCoords(p2));
+  uvs.emplace_back(getUVCoords(p3));
 }
-
 
 void fillVectors(
     std::vector<HalfEdge_ptr> const &edges,
@@ -128,18 +209,12 @@ void fillVectors(
 
     auto te = e->twin;
 #define USE_INDICES
-#ifdef USE_INDICES
     meshIndices.push_back(count++);
     meshIndices.push_back(count++);
     meshIndices.push_back(count++);
 
     std::fill_n(std::back_inserter(meshColors),4, colors[e->end->index%255]);
-#else
-    std::fill_n(std::back_inserter(meshColors),3, colors[e->end->index%255]);
-    std::fill_n(std::back_inserter(meshColors),3, colors[te->end->index%255]);
-#endif
 
-#ifdef USE_INDICES
     meshVertices.push_back(te->pCell->point.position);
     meshNormals.push_back(CalculateSurfaceNormal(te->pCell->point.position, te->start->point.position, te->end->point.position));
 
@@ -148,9 +223,6 @@ void fillVectors(
     meshIndices.push_back(count++);
     meshIndices.push_back(count - 2);
     meshIndices.push_back(count - 3);
-#else
-    addVerticesAndNormals(te->pCell->point.position, te->end->point.position, te->start->point.position, meshVertices, meshNormals);
-#endif
   }
   //break;
 #define REMOVE_DUPS
@@ -183,19 +255,15 @@ void fillVectors(
     //std::cout <<
 #endif
 
-#if 0
-    meshIndices = MeshTools::duplicate(meshIndices, MeshTools::removeDuplicates(meshVertices));
-    //meshIndices = MeshTools::removeDuplicates(meshVertices);
-#else
+#if 1
 
     //      auto meshVerticesIndices = MeshTools::removeDuplicates(meshVertices);
     //auto meshVerticesIndices = MeshTools::duplicate( meshIndices, MeshTools::removeDuplicates(meshVertices));
-#ifdef USE_INDICES // Convert back to non-indexed array
     meshVertices = MeshTools::duplicate(meshIndices, meshVertices);
     meshNormals = MeshTools::duplicate(meshIndices, meshNormals);
     meshColors = MeshTools::duplicate(meshIndices, meshColors);
-#endif
-    auto meshVerticesIndices = MeshTools::removeDuplicates(meshVertices);
+
+    auto meshVerticesIndices = MeshTools::removeDuplicates(meshVertices, .1f);
     auto meshNormalsIndices = MeshTools::removeDuplicates(meshNormals);
     auto meshColorsIndices = MeshTools::removeDuplicates(meshColors);
 
@@ -212,7 +280,6 @@ void fillVectors(
 
 
     //std::vector<UnsignedInt>
-#if 1
     //      meshIndices.clear();
     meshIndices =
         //MeshTools::duplicate(meshIndices,
@@ -222,7 +289,7 @@ void fillVectors(
             std::make_pair(std::cref(meshColorsIndices), std::ref(meshColors))
             //)
                                         );
-#endif
+
 #if 0
     std::cout <<"\t Indices: "<< meshIndices.size() << std::endl;
     std::cout <<"\t Normals: "<< meshNormals.size() << std::endl;
@@ -243,7 +310,7 @@ void fillVectors(
 
 Application::Application(const Arguments& arguments) :
     Platform::Application{arguments} {
-
+  using namespace Math::Literals;
   GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
   GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
   {
@@ -254,32 +321,45 @@ Application::Application(const Arguments& arguments) :
     _viewMatrix = (Matrix4::lookAt({0.f, 0.f, 5.f}, {0.f, 0.f, 0.f}, Vector3::zAxis(1.f)));
 
     _pCamera->setProjectionMatrix(
-        //Matrix4::perspectiveProjection(Magnum::Math::Deg<float>(60.0),
-        Matrix4::perspectiveProjection(Magnum::Math::Deg<float>(60.0f),//60.0_degf,
-                                       Vector2{GL::defaultFramebuffer.viewport().size()}.aspectRatio(), 0.001f, 100.0f))
-        .setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend);
+        Matrix4::perspectiveProjection(
+            60.0_degf,
+            Vector2{GL::defaultFramebuffer.viewport().size()}.aspectRatio(),
+            0.001f,
+            100.0f))
+        .setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+        .setViewport(GL::defaultFramebuffer.viewport().size());
 
     _pManipulator = new Object3D{&_scene};
-#if 1
     (*_pManipulator)
+        .scale(Vector3{2.0f, 2.0f,2.0f});
+#if 0
+        (*_pManipulator)
         .translate(Vector3::yAxis(-0.3f))
         .rotateX(Math::Rad<float>(30.f));
     //.rotateX(30.0_degf);
 #endif
   }
 
-  auto const genPoints = generatePoints(100);
-  _pSv = new SphericalVoronoi(genPoints);
+  auto const genPoints = generatePoints(200);
+  _pSv = new SphericalVoronoi(genPoints, false);
+#if 0
+  auto bitmap = CreateTexture(512, 512);
+  bitmap->SaveBitmap("texture.bmp");
+
+  delete bitmap;
+#endif
+
   CreateColors(256);
+
+  _pSv->solve();
 
   auto cells = _pSv->getCells();
   auto vertices = _pSv->getVertices();
   auto edges = _pSv->getHalfEdges();
 
-  //  _pSv->setDebugMode(true);
-  _pSv->solve();
 
-  smoothLaplacian(cells, vertices, 2);
+  //smoothLaplacian(cells, vertices, 1);
+  //smoothLaplacian(_pSv->getCells(), _pSv->getVertices(), 20);
 
   std::vector<Vector3> meshVertices;
   std::vector<UnsignedInt> meshIndices;
@@ -291,7 +371,7 @@ Application::Application(const Arguments& arguments) :
 
 #if 1
   fillVectors(
-      _pSv->getHalfEdges(),
+      edges,
       meshVertices,
       meshNormals,
       meshIndices,
@@ -299,22 +379,21 @@ Application::Application(const Arguments& arguments) :
       meshUVs,
       _colors);
 #endif
-  //std::vector<Vector3> &meshVertices,
-  //std::vector<Vector3> &meshNormals,
-  //std::vector<UnsignedInt> &meshIndices,
-  //std::vector<Color3> &meshColors,
-  //std::vector<Vector2> &meshUVs)
 
-
-#if 1
+#if 0
   new SphereDrawable{*_pManipulator, &_drawables,
-        meshVertices,
-        meshNormals,
-        meshIndices,
-        meshColors,
-        };
+      meshVertices,
+      meshNormals,
+      meshIndices,
+      meshColors
+      };
+#else
+  sphere = new SphereDrawable{*_pManipulator, &_drawables,
+                              meshVertices,
+                              meshNormals,
+                              meshIndices,
+                              meshColors};
 #endif
-
 
 }
 
@@ -327,7 +406,38 @@ void Application::drawEvent() {
   redraw(); // NOTE: Always redraw, for now . . .
 }
 
+Vector3 Application::positionOnSphere(const Vector2i& position) const {
+  const Vector2 positionNormalized = Vector2{position*2.f}/Vector2{_pCamera->viewport()} - Vector2{1.f};
+  //const Vector2 positionNormalized = Vector2{position}/Vector2{_pCamera->viewport()} - Vector2{0.5f};
+  const Float length = positionNormalized.length();
+  Vector3 const result(length > 1.0f
+                       ? Vector3(positionNormalized, 0.0f)
+                       : Vector3(positionNormalized, 1.0f - length));
+  //result.y() *= -1.0f;
+  return (result*Vector3::yScale(-1.0f)).normalized();
+  //result = Vector3(result * Vector3::yScale(-1.0f));
+  //return result.normalized();
+}
+
 #ifndef CORRADE_TARGET_ANDROID
+void Application::viewportEvent(ViewportEvent &event) {
+  GL::defaultFramebuffer.setViewport({{}, event.windowSize()});
+  _pCamera->setViewport(event.windowSize());
+}
+
+void Application::mouseScrollEvent(MouseScrollEvent& event) {
+  if(!event.offset().y()) return;
+
+  /* Distance to origin */
+  Float distance = _pCameraObject->transformation().translation().z();
+
+  /* Move 15% of the distance back or forward */
+  distance *= 1 - (event.offset().y() > 0 ? 1/0.85f : 0.85f);
+  _pCameraObject->translate(Vector3::zAxis(distance));
+
+  redraw();
+}
+
 void Application::keyPressEvent(KeyEvent &event) {
   if(event.key() == KeyEvent::Key::Q)
     exit();
@@ -335,9 +445,29 @@ void Application::keyPressEvent(KeyEvent &event) {
 #endif
 
 void Application::mousePressEvent(MouseEvent& event) {
+  if(event.button() == MouseEvent::Button::Left)
+    _previousPosition = positionOnSphere(event.position());  
+  event.setAccepted();
 }
+
 void Application::mouseReleaseEvent(MouseEvent& event) {
+  if(event.button() == MouseEvent::Button::Left)
+    _previousPosition = Vector3{0};
+  event.setAccepted();
 }
 void Application::mouseMoveEvent(MouseMoveEvent& event) {
+  if(!(event.buttons() & MouseMoveEvent::Button::Left)) return;
+  if (_previousPosition.isZero()) return;
+
+  const Vector3 currentPosition = positionOnSphere(event.position());
+  const Vector3 axis = Math::cross(_previousPosition, currentPosition);
+
+  if(_previousPosition.length() < 0.001f || axis.length() < 0.001f) return;
+
+  _pManipulator->rotate(Math::angle(_previousPosition, currentPosition), axis.normalized());
+  _previousPosition = currentPosition;
+
+  event.setAccepted();
+  redraw();
 }
 } // Magnum

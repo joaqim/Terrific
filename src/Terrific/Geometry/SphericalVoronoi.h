@@ -174,7 +174,7 @@ namespace Terrific {
 
     class SphericalVoronoi {
    public:
-      SphericalVoronoi(const std::vector<Vector3>& directions);
+      SphericalVoronoi(const std::vector<Vector3>& directions, bool const debugMode_=false);
 
       void setDebugMode(bool debugMode);
 

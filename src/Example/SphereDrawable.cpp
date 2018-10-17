@@ -2,19 +2,28 @@
 #include <iostream>
 namespace Magnum {
 
-SphereDrawable::SphereDrawable(
-    Object3D& object,
-    SceneGraph::DrawableGroup3D* group,
-    std::vector<Vector3> const &vertices,
-    std::vector<Vector3> const &normals,
-    std::vector<UnsignedInt> const &indices,
-    std::vector<Color3> const &colors) : SceneGraph::Drawable3D{object, group} {
+SphereDrawable::SphereDrawable(Object3D& object,
+                               SceneGraph::DrawableGroup3D* group,
+                               std::vector<Vector3> const &vertices,
+                               std::vector<Vector3> const &normals,
+                               std::vector<UnsignedInt> const &indices,
+                               std::vector<Color3> const &colors
+                               ): SceneGraph::Drawable3D{object, group}
+{
+  using namespace Math::Literals;
+#if 0
+  _phongShader
+      .setAmbientColor(0x111111_rgbf)
+      .setSpecularColor(0xffffff_rgbf)
+      .setShininess(80.0f);
+  _textureShader
+      .setAmbientColor(0x111111_rgbf)
+      .setSpecularColor(0x111111_rgbf)
+      .setShininess(80.0f);
+#endif
 
   _vertexBuffer.setData(vertices, GL::BufferUsage::StaticDraw);
-#define WITH_NORMALS
-#ifdef WITH_NORMALS
   _normalsBuffer.setData(normals, GL::BufferUsage::StaticDraw);
-#endif
   _indexBuffer.setData(indices, GL::BufferUsage::StaticDraw);
 
   _mesh.setIndexBuffer(_indexBuffer, 0, MeshIndexType::UnsignedInt, 0, _indexBuffer.size());
@@ -35,9 +44,8 @@ SphereDrawable::SphereDrawable(
 
     _mesh
         .setPrimitive( MeshPrimitive::Triangles )
-#ifdef WITH_NORMALS
+        //.setPrimitive( MeshPrimitive::Lines )
         .addVertexBuffer(_normalsBuffer, 0,  Shaders::Phong::Normal{})
-#endif
         .addVertexBuffer(_vertexBuffer, 0, Shaders::Phong::Position{});
 
 
@@ -47,6 +55,7 @@ SphereDrawable::SphereDrawable(
 
 void SphereDrawable::draw(const Matrix4& transformationMatrix, SceneGraph::Camera3D &camera) {
   using namespace Math::Literals;
+#if 1
   _phongShader
       .setDiffuseColor(0xa5c9ea_rgbf)
       .setLightPosition(camera.cameraMatrix().transformPoint({-17.0f, 17.0f, 17.0f}))
@@ -55,6 +64,14 @@ void SphereDrawable::draw(const Matrix4& transformationMatrix, SceneGraph::Camer
       .setProjectionMatrix(camera.projectionMatrix());
 
   _mesh.draw(_phongShader);
+#else
+  _textureShader
+      .bindDiffuseTexture(_texture)
+      .setLightPosition(camera.cameraMatrix().transformPoint({-17.0f, 17.0f, 17.0f}))
+      .setTransformationMatrix(transformationMatrix)
+      .setNormalMatrix(transformationMatrix.rotationScaling())
+      .setProjectionMatrix(camera.projectionMatrix());
+#endif
 }
 
 }

@@ -3,6 +3,7 @@
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Texture.h>
 
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/MeshTools/Interleave.h>
@@ -35,11 +36,18 @@ namespace Magnum {
         std::vector<Vector3> const &vertices,
         std::vector<Vector3> const &normals,
         std::vector<UnsignedInt> const &indices,
-        std::vector<Color3> const &colors);
+        std::vector<Color3> const &colors
+                            );
+
  private:
-    void draw(const Matrix4& transformationMatrix, SceneGraph::Camera3D &camera) override;
-    GL::Mesh _mesh;
+void draw(const Matrix4& transformationMatrix, SceneGraph::Camera3D &camera) override;
+GL::Mesh _mesh;
     Shaders::Phong _phongShader;
+
+    //Shaders::Phong _textureShader{Shaders::Phong::Flag::DiffuseTexture};
+ public:
+    GL::Texture2D *texture;
+ private:
 
     GL::Buffer _vertexBuffer;
     GL::Buffer _indexBuffer;
