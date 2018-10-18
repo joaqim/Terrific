@@ -177,7 +177,7 @@ size_t SphericalVoronoi::getCircleEventQueueSize() const {
 
 #define SV_DEBUG(...)   do { if (debugMode) { __VA_ARGS__; } } while(0)
 
-bool comparePhi(float const lhs, float const rhs) {
+bool comparePhi(double const lhs, double const rhs) {
   return(static_cast<int>(lhs*1000.0) == static_cast<int>(rhs*1000.0));
 }
 
@@ -185,33 +185,34 @@ namespace
 {
 struct IndexedDirection
 {
-  IndexedDirection(const Vector3& dir, int id)
+  IndexedDirection(const Vector3d& dir, int id)
       : direction(dir)
       , index(id)
   {
   }
 
-  Vector3 direction;
+  Vector3d direction;
   int index;
 };
 }
 
 
-SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3>& directions, bool const debugMode_)
+SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3d>& directions, bool const debugMode_)
     : scanLine(), nbSteps(0), debugMode(debugMode_) {
   using namespace std;
 
-  std::vector<std::pair<int, Vector3>> sortedDirections;
+  std::vector<std::pair<int, Vector3d>> sortedDirections;
   for (auto& dir : directions)
   {
-    sortedDirections.push_back(std::pair<int, Vector3>(sortedDirections.size(), dir));
+    sortedDirections.push_back(std::pair<int, Vector3d>(sortedDirections.size(), dir));
   }
 
-  sort(sortedDirections.begin(), sortedDirections.end(), [](const std::pair<int, Vector3>& a, const std::pair<int, Vector3>& b) { return a.second.z() > b.second.z(); });
+  sort(sortedDirections.begin(), sortedDirections.end(), [](const std::pair<int, Vector3d>& a, const std::pair<int, Vector3d>& b) { return a.second.z() > b.second.z(); });
   for (size_t i=0; i<sortedDirections.size(); ++i)
   {
     auto& d = sortedDirections[i].second;
-    if (Math::length(d) < eps) continue;
+    //if (Math::length(d) < eps) continue;
+    if (d.length() < eps) continue;
     Point p(d);
     //SV_DEBUG(std::cout << "Position: ("<< d.x() << ", " << d.y() << ", "<< d.z() << ")\n");
     for (auto& cell : cells)
@@ -267,12 +268,12 @@ void SphericalVoronoi::dumpBeachState(std::ostream& stream) {
   stream << "]" << endl;
 }
 
-void SphericalVoronoi::step(float maxDeltaXi) {
+void SphericalVoronoi::step(double maxDeltaXi) {
   using namespace std;
 
   if (!isFinished())
   {
-    float nextXi = scanLine.xi + maxDeltaXi;
+    double nextXi = scanLine.xi + maxDeltaXi;
 
     SV_DEBUG(cout << "step " << nbSteps << " " << scanLine.xi);
 
@@ -450,9 +451,9 @@ void SphericalVoronoi::bindHalfEdgesToCells() {
     std::set_intersection(e->start->cells.begin(), e->start->cells.end(), e->end->cells.begin(), e->end->cells.end(), back_inserter(common));
     assert(common.size() == 2);
     Cell_ptr c0 = common[0];
-    Vector3 d0 = e->start->point.position - c0->point.position;
-    Vector3 d1 = e->end->point.position - c0->point.position;
-    Vector3 n = cross(d0, d1);
+    Vector3d d0 = e->start->point.position - c0->point.position;
+    Vector3d d1 = e->end->point.position - c0->point.position;
+    Vector3d n = cross(d0, d1);
     Cell_ptr c = nullptr;
     if (dot(n, c0->point.position) > 0)
     {
@@ -503,12 +504,12 @@ void SphericalVoronoi::bindHalfEdgesToCells() {
   }
 }
 
-bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, float xi, Point& oPoint) {
-  float theta1 = arc1.pCell->point.theta;
-  float phi1 = arc1.pCell->point.phi;
+bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, double xi, Point& oPoint) {
+  double theta1 = arc1.pCell->point.theta;
+  double phi1 = arc1.pCell->point.phi;
 
-  float theta2 = arc2.pCell->point.theta;
-  float phi2 = arc2.pCell->point.phi;
+  double theta2 = arc2.pCell->point.theta;
+  double phi2 = arc2.pCell->point.phi;
 
   if (theta1 >= xi)
   {
@@ -537,24 +538,24 @@ bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& ar
     }
   }
 
-  float cos_xi = cos(xi);
-  float sin_xi = sin(xi);
-  float cos_theta1 = cos(theta1);
-  float sin_theta1 = sin(theta1);
-  float cos_theta2 = cos(theta2);
-  float sin_theta2 = sin(theta2);
-  float cos_phi1 = cos(phi1);
-  float sin_phi1 = sin(phi1);
-  float cos_phi2 = cos(phi2);
-  float sin_phi2 = sin(phi2);
-  float a1 = (cos_xi - cos_theta2) * sin_theta1 * cos_phi1;
-  float a2 = (cos_xi - cos_theta1) * sin_theta2 * cos_phi2;
-  float a = a1 - a2;
-  float b1 = (cos_xi - cos_theta2) * sin_theta1 * sin_phi1;
-  float b2 = (cos_xi - cos_theta1) * sin_theta2 * sin_phi2;
-  float b = b1 - b2;
-  float c = (cos_theta1 - cos_theta2) * sin_xi;
-  float l = sqrt(a*a + b*b);
+  double cos_xi = cos(xi);
+  double sin_xi = sin(xi);
+  double cos_theta1 = cos(theta1);
+  double sin_theta1 = sin(theta1);
+  double cos_theta2 = cos(theta2);
+  double sin_theta2 = sin(theta2);
+  double cos_phi1 = cos(phi1);
+  double sin_phi1 = sin(phi1);
+  double cos_phi2 = cos(phi2);
+  double sin_phi2 = sin(phi2);
+  double a1 = (cos_xi - cos_theta2) * sin_theta1 * cos_phi1;
+  double a2 = (cos_xi - cos_theta1) * sin_theta2 * cos_phi2;
+  double a = a1 - a2;
+  double b1 = (cos_xi - cos_theta2) * sin_theta1 * sin_phi1;
+  double b2 = (cos_xi - cos_theta1) * sin_theta2 * sin_phi2;
+  double b = b1 - b2;
+  double c = (cos_theta1 - cos_theta2) * sin_xi;
+  double l = sqrt(a*a + b*b);
   if (abs(a) > l || abs(c) > l)
   {
     return false;
@@ -564,7 +565,7 @@ bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& ar
     auto gamma = atan2(a, b);
     auto sin_phi_int_plus_gamma_1 = c / l;
 
-    float phi_int_plus_gamma_1 = asin(sin_phi_int_plus_gamma_1);
+    double phi_int_plus_gamma_1 = asin(sin_phi_int_plus_gamma_1);
 
     auto pA = phi_int_plus_gamma_1 - gamma;
 
@@ -583,7 +584,7 @@ bool SphericalVoronoi::arcsIntersection(const BeachArc& arc1, const BeachArc& ar
       }
     }
 
-bool SphericalVoronoi::intersectWithNextArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const {
+bool SphericalVoronoi::intersectWithNextArc(beach_type::const_iterator itArc, double xi, Point& oPoint) const {
   auto itNextArc = getNextArcOnBeach(itArc);
   if (itNextArc == itArc)
   {
@@ -593,7 +594,7 @@ bool SphericalVoronoi::intersectWithNextArc(beach_type::const_iterator itArc, fl
         return result;
     }
 
-bool SphericalVoronoi::intersectWithPrevArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const {
+bool SphericalVoronoi::intersectWithPrevArc(beach_type::const_iterator itArc, double xi, Point& oPoint) const {
   auto itPrevArc = getPrevArcOnBeach(itArc);
   if (itPrevArc == itArc)
   {
@@ -644,13 +645,13 @@ void SphericalVoronoi::handleSiteEvent(SiteEvent& event) {
       intPrev = arcsIntersection(**itPrevArc, **itArc, scanLine.xi, pointPrev);
       intNext = arcsIntersection(**itArc, **itNextArc, scanLine.xi, pointNext);
 
-      float phi_start = arc->pCell->point.phi - M_PI;
+      double phi_start = arc->pCell->point.phi - M_PI;
       if (intPrev)
       {
         phi_start = pointPrev.phi;
       }
 
-      float phi_end = arc->pCell->point.phi + M_PI;
+      double phi_end = arc->pCell->point.phi + M_PI;
       if (intNext)
       {
         phi_end = pointNext.phi;
@@ -852,22 +853,22 @@ void SphericalVoronoi::handleCircleEvent(const CircleEvent_ptr& event) {
   }
 }
 
-Point SphericalVoronoi::thetaToPoint(float theta, bool positive, float xi, float theta1, float phi1) {
-  float delta_phi = 0;
+Point SphericalVoronoi::thetaToPoint(double theta, bool positive, double xi, double theta1, double phi1) {
+  double delta_phi = 0;
 
   if (theta != 0)
   {
     auto theta_p = theta1;
     auto cos_delta_phi = ((cos(xi) - cos(theta_p)) / tan(theta) + sin(xi)) / sin(theta_p);
-    cos_delta_phi = Magnum::Math::clamp<float>(cos_delta_phi, -1.0, 1.0);
+    cos_delta_phi = Magnum::Math::clamp<double>(cos_delta_phi, -1.0, 1.0);
     delta_phi = acos(cos_delta_phi);
   }
-  float s = positive ? 1 : -1;
+  double s = positive ? 1 : -1;
   Point p(theta, phi1 + delta_phi * s);
   return p;
 }
 
-Point SphericalVoronoi::phiToPoint(float phi, float xi, float theta1, float phi1) {
+Point SphericalVoronoi::phiToPoint(double phi, double xi, double theta1, double phi1) {
   if (theta1 >= xi)
   {
     assert(0);

@@ -9,8 +9,8 @@
 
 #include <limits>
 
-#define FLT_MAX std::numeric_limits<float>::max()
-#define FLT_MIN std::numeric_limits<float>::min()
+#define FLT_MAX std::numeric_limits<double>::max()
+#define FLT_MIN std::numeric_limits<double>::min()
 
 #include "xs_Float.h"  // http://stereopsis.com/sree/fpu2006.html
 
@@ -37,9 +37,7 @@
 namespace Terrific {
   namespace Math {
 
-    typedef Magnum::Math::Rad<float> Rad;
-
-    inline std::string stringFromVector3(const Vector3 &r3) {
+    inline std::string stringFromVector3d(const Vector3d &r3) {
       std::stringstream ss;
       ss << "<" << r3.x() << "," << r3.y() << "," << r3.z() << ">";
       return ss.str();
@@ -94,20 +92,20 @@ namespace Terrific {
     //return ext::fmin(max, ext::fmax(value, min));
   }
 
-  inline auto length(Vector3 const val) {
+  inline auto length(Vector3d const val) {
     return val.length();
   }
 
-  inline auto normalize(Vector3 const val ) {
+  inline auto normalize(Vector3d const val ) {
     return val.normalized();
   }
 
-  inline float distance(Vector3 const &lhs, Vector3 const &rhs) {
+  inline double distance(Vector3d const &lhs, Vector3d const &rhs) {
 
-    float x1 = lhs.x();
-    float y1 = lhs.y();
-    float x2 = rhs.x();
-    float y2 = rhs.y();
+    double x1 = lhs.x();
+    double y1 = lhs.y();
+    double x2 = rhs.x();
+    double y2 = rhs.y();
 
     auto val1 = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
     auto val2 = abs(lhs.length() - rhs.length());
@@ -122,8 +120,8 @@ namespace Terrific {
   class Plane;
   class Point;
 
-  inline Vector3 getTransformPosition(const Matrix4& transform) {
-    return Vector3(transform[3][0], transform[3][1], transform[3][2]);
+  inline Vector3d getTransformPosition(const Matrix4d& transform) {
+    return Vector3d(transform[3][0], transform[3][1], transform[3][2]);
   }
 
   enum ECubeFace
@@ -155,20 +153,20 @@ namespace Terrific {
  public:
  Point() : theta(0), phi(0) { computePosition(); }
 
- Point(float theta_, float phi_)
+ Point(double theta_, double phi_)
      : theta(theta_), phi(phi_)
     {
       computePosition();
     }
 
-    Point(const Vector3& direction)
+    Point(const Vector3d& direction)
     {
       assignDirection(direction);
     }
 
-    Point(float x, float y, float z)
+    Point(double x, double y, double z)
     {
-      assignDirection(Vector3(x, y, z));
+      assignDirection(Vector3d(x, y, z));
     }
 
 
@@ -177,7 +175,7 @@ namespace Terrific {
     }
 
 
-    //NOTE: Redefinition when using float instead of double
+    //NOTE: Redefinition when using double instead of double
     /*
       Point(const F3& pos)
       : Point(pos.x(), pos.y(), pos.z)
@@ -185,36 +183,36 @@ namespace Terrific {
       }
     */
 
-    float theta;
-    float phi;
-    Vector3 position;
+    double theta;
+    double phi;
+    Vector3d position;
 
-    std::tuple<Vector3, CubeFaceBitSet> cubeCoord() const;
+    std::tuple<Vector3d, CubeFaceBitSet> cubeCoord() const;
 
-    Vector3 tangent() const;
-    Vector3 binormal() const;
+    Vector3d tangent() const;
+    Vector3d binormal() const;
 
-    void assignDirection(const Vector3& direction)
+    void assignDirection(const Vector3d& direction)
     {
-      float r = length(direction);
-      //float r = direction.length();
+      double r = length(direction);
+      //double r = direction.length();
       assert(r > 0);
-      theta = acos(Magnum::Math::clamp<float>(direction.z() / r, -1.0, 1.0));
-      auto theta2 = acos(clamp<float>(direction.z() / r, -1.0, 1.0));
+      theta = acos(Magnum::Math::clamp<double>(direction.z() / r, -1.0, 1.0));
+      auto theta2 = acos(clamp<double>(direction.z() / r, -1.0, 1.0));
       assert(theta == theta2);
 
       phi = atan2(direction.y(), direction.x());
       position = direction / r;
     }
 
-    float sphericalDistance(const Point& p2) const
+    double sphericalDistance(const Point& p2) const
     {
-      float dot = Magnum::Math::dot(position, p2.position);
-      float result = acos(clamp<float>(dot, -1.0, 1.0));
+      double dot = Magnum::Math::dot(position, p2.position);
+      double result = acos(clamp<double>(dot, -1.0, 1.0));
       return result;
     }
 
-    bool equalWithEps(const Point& p2, float eps) const
+    bool equalWithEps(const Point& p2, double eps) const
     {
       return std::abs(position.x() - p2.position.x()) < eps &&
           std::abs(position.y() - p2.position.y()) < eps &&
@@ -240,20 +238,20 @@ namespace Terrific {
  private:
     void computePosition()
     {
-      position = Vector3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+      position = Vector3d(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
     }
   };
 
   namespace Util
   {
-    extern std::vector<Vector3> splitSphericalLineSegment(const Point& start, const Point& end, float deltaAngle = M_PI / 180.0);
-    extern float lagrangeInterpolate(float x, const std::vector<float>& xArray, const std::vector<float>& yArray);
-    extern float interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<float>& values);
-    extern float computeTriangleArea(const Vector3& p0, const Vector3& p1, const Vector3& p2);
+    extern std::vector<Vector3d> splitSphericalLineSegment(const Point& start, const Point& end, double deltaAngle = M_PI / 180.0);
+    extern double lagrangeInterpolate(double x, const std::vector<double>& xArray, const std::vector<double>& yArray);
+    extern double interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<double>& values);
+    extern double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2);
 
-    extern void faceAxisDirection(ECubeFace face, Vector3& s_dir, Vector3& t_dir, Vector3& p_dir);
+    extern void faceAxisDirection(ECubeFace face, Vector3d& s_dir, Vector3d& t_dir, Vector3d& p_dir);
 
-    inline float sqrDistance(Vector2 a, Vector2 b)
+    inline double sqrDistance(Vector2d a, Vector2d b)
     {
       auto p = a - b;
       return dot(p, p);
@@ -263,58 +261,58 @@ namespace Terrific {
   class SphericalLine
   {
  public:
- SphericalLine() : direction(Vector3(0, 0, 1)), xi(0) {}
- SphericalLine(const Vector3& direction_, float xi_) : direction(normalize(direction_)), xi(xi_) {}
+ SphericalLine() : direction(Vector3d(0, 0, 1)), xi(0) {}
+ SphericalLine(const Vector3d& direction_, double xi_) : direction(normalize(direction_)), xi(xi_) {}
 
-    Vector3 direction;
-    float xi;
+    Vector3d direction;
+    double xi;
   };
 
   class AABB
   {
  public:
     AABB();
-    AABB(const Vector3& p);
-    AABB(const Vector3& min, const Vector3& max);
+    AABB(const Vector3d& p);
+    AABB(const Vector3d& min, const Vector3d& max);
 
     void reset();
     bool isValid() const;
     bool isEmpty() const;
 
-    const Vector3& min() const { assert(isValid()); return m_min; }
-    const Vector3& max() const { assert(isValid()); return m_max; }
+    const Vector3d& min() const { assert(isValid()); return m_min; }
+    const Vector3d& max() const { assert(isValid()); return m_max; }
 
-    Vector3 center() const { assert(isValid()); return (m_min + m_max) * 0.5f; }
-    Vector3 size() const { assert(isValid()); return m_max - m_min; }
-    Vector3 extent() const { return size() * 0.5f; }
+    Vector3d center() const { assert(isValid()); return (m_min + m_max) * 0.5f; }
+    Vector3d size() const { assert(isValid()); return m_max - m_min; }
+    Vector3d extent() const { return size() * 0.5f; }
 
-    void getMajorVertices(const Vector3& direction, Vector3& P, Vector3& N) const;
+    void getMajorVertices(const Vector3d& direction, Vector3d& P, Vector3d& N) const;
 
-    void unionWith(const Vector3& p);
+    void unionWith(const Vector3d& p);
     void unionWith(const AABB& aabb);
-    bool contains(const Vector3& p) const;
+    bool contains(const Vector3d& p) const;
     bool contains(const AABB& aabb) const;
 
     bool operator == (const AABB& aabb) const;
  private:
-    Vector3 m_min, m_max;
+    Vector3d m_min, m_max;
   };
 
   class Ray
   {
  public:
     Ray();
-    Ray(const Vector3& origin, const Vector3& direction);
+    Ray(const Vector3d& origin, const Vector3d& direction);
 
-    inline const Vector3& origin() const { return m_origin; }
-    inline void setOrigin(const Vector3& origin) { m_origin = origin; }
-    inline const Vector3& direction() const { return m_direction; }
-    inline void setDirection(const Vector3& direction) { m_direction = normalize(direction); }
-    inline void setNormalizedDirection(const Vector3& direction) { m_direction = direction; }
+    inline const Vector3d& origin() const { return m_origin; }
+    inline void setOrigin(const Vector3d& origin) { m_origin = origin; }
+    inline const Vector3d& direction() const { return m_direction; }
+    inline void setDirection(const Vector3d& direction) { m_direction = normalize(direction); }
+    inline void setNormalizedDirection(const Vector3d& direction) { m_direction = direction; }
 
  private:
-    Vector3 m_origin;
-    Vector3 m_direction;
+    Vector3d m_origin;
+    Vector3d m_direction;
   };
 
   class Plane
@@ -322,27 +320,27 @@ namespace Terrific {
  public:
     Plane();
     Plane(const Plane& other);
-    Plane(const Vector3& normal, float distance);
-    Plane(const Vector4& vec);
-    Plane(const Vector3& a, const Vector3& b, const Vector3& c);
+    Plane(const Vector3d& normal, double distance);
+    Plane(const Vector4d& vec);
+    Plane(const Vector3d& a, const Vector3d& b, const Vector3d& c);
 
-    const Vector3& normal() const { return m_normal; }
-    void setNormal(const Vector3& normal) { m_normal = normal; }
-    float distance() const { return m_distance; }
-    void setDistance(float distance) { m_distance = distance; }
+    const Vector3d& normal() const { return m_normal; }
+    void setNormal(const Vector3d& normal) { m_normal = normal; }
+    double distance() const { return m_distance; }
+    void setDistance(double distance) { m_distance = distance; }
 
     Plane normalize() const;
-    Plane transform(const Matrix4 transform) const;
-    float distance(const Vector3& point) const;
-    bool pointOnSide(const Vector3& point) const;
-    bool lineIntersection(const Vector3& ptA, const Vector3& ptB, Vector3& resultDestination) const;
+    Plane transform(const Matrix4d transform) const;
+    double distance(const Vector3d& point) const;
+    bool pointOnSide(const Vector3d& point) const;
+    bool lineIntersection(const Vector3d& ptA, const Vector3d& ptB, Vector3d& resultDestination) const;
 
  private:
-    Vector3 m_normal;
-    float m_distance;
+    Vector3d m_normal;
+    double m_distance;
   };
 
-  bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Plane& planeC, Vector3& result);
+  bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Plane& planeC, Vector3d& result);
 
   bool rayAabbIntersection(const Ray& ray, const AABB& aabb);
 
@@ -351,27 +349,27 @@ namespace Terrific {
   {
  public:
     //using Vec3 = tvec3<T>;
-    using Vector3 = Magnum::Math::Vector3<T>;
+    using Vector3d = Magnum::Math::Vector3<T>;
     PositionT();
     PositionT(ECubeFace face, T s, T t, T p);
-    PositionT(ECubeFace face, const Vector3& stp);
+    PositionT(ECubeFace face, const Vector3d& stp);
 
     ECubeFace face() const { return m_face; }
-    const Vector3& surfacePoint() const { return m_surfacePoint; }
-    Vector3 stpCoords() const;
-    const Vector3& spacePosition() const { return m_spacePosition; }
+    const Vector3d& surfacePoint() const { return m_surfacePoint; }
+    Vector3d stpCoords() const;
+    const Vector3d& spacePosition() const { return m_spacePosition; }
 
  private:
     ECubeFace m_face;
     T m_height;
-    Vector3 m_surfacePoint;
-    Vector3 m_spacePosition;
+    Vector3d m_surfacePoint;
+    Vector3d m_spacePosition;
   };
 
   typedef PositionT<float> PositionF;
-  typedef PositionT<float> Position;
+  typedef PositionT<double> Position;
   typedef PositionT<double> PositionD;
-}
+  }
 }
 
 

@@ -22,8 +22,9 @@
 
 #include <Terrific/Geometry/SphericalVoronoi.h>
 
-namespace Magnum {
+namespace Terrific {
 
+  using namespace Magnum;
   typedef SceneGraph::Object<SceneGraph::MatrixTransformation3D> Object3D;
   typedef SceneGraph::Scene<SceneGraph::MatrixTransformation3D> Scene3D;
 

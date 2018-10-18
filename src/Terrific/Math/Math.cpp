@@ -5,11 +5,11 @@
 namespace Terrific {
 namespace  Math {
 
-std::tuple<Vector3, CubeFaceBitSet> Point::cubeCoord() const {
-  Vector3 absPos = Magnum::Math::abs(position);
-  Vector3 result;
+std::tuple<Vector3d, CubeFaceBitSet> Point::cubeCoord() const {
+  Vector3d absPos = Magnum::Math::abs(position);
+  Vector3d result;
   CubeFaceBitSet faceSet;
-  float ratio;
+  double ratio;
   if (absPos.z() >= fmax(absPos.x(), absPos.y()))
   {
     ratio = 1.0 / absPos.z();
@@ -53,59 +53,59 @@ std::tuple<Vector3, CubeFaceBitSet> Point::cubeCoord() const {
   return std::tie(result, faceSet);
 }
 
-Vector3 Point::tangent() const {
+Vector3d Point::tangent() const {
   CubeFaceBitSet bitSet;
 
-  Vector3 binormal(1, 0, 0);
+  Vector3d binormal(1, 0, 0);
 
   if (bitSet.test(CF_POSX))
   {
-    binormal = Vector3(0, 1, 0);
+    binormal = Vector3d(0, 1, 0);
   }
   else if (bitSet.test(CF_NEGX))
   {
-    binormal = Vector3(0, 1, 0);
+    binormal = Vector3d(0, 1, 0);
   }
   else if (bitSet.test(CF_POSY))
   {
-    binormal = Vector3(1, 0, 0);
+    binormal = Vector3d(1, 0, 0);
   }
   else if (bitSet.test(CF_NEGY))
   {
-    binormal = Vector3(-1, 0, 0);
+    binormal = Vector3d(-1, 0, 0);
   }
   else if (bitSet.test(CF_POSZ))
   {
-    binormal = Vector3(0, 1, 0);
+    binormal = Vector3d(0, 1, 0);
   }
   else if (bitSet.test(CF_NEGZ))
   {
-    binormal = Vector3(0, 1, 0);
+    binormal = Vector3d(0, 1, 0);
   }
   else
   {
     assert(false);
   }
 
-  Vector3 normal = position;
-  Vector3 result = normalize(cross(binormal, normal));
+  Vector3d normal = position;
+  Vector3d result = normalize(cross(binormal, normal));
   return result;
 }
 
-Vector3 Point::binormal() const {
-  Vector3 t = tangent();
-  Vector3 normal = position;
-  Vector3 result = normalize(cross(normal, t));
+Vector3d Point::binormal() const {
+  Vector3d t = tangent();
+  Vector3d normal = position;
+  Vector3d result = normalize(cross(normal, t));
   return result;
 }
 
 // http://www.cgafaq.info/wiki/Intersection_of_three_planes
-bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Plane& planeC, Vector3& result) {
-  Vector3 bcCross = cross(planeB.normal(), planeC.normal());
-  float denom = dot(planeA.normal(), bcCross);
+bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Plane& planeC, Vector3d& result) {
+  Vector3d bcCross = cross(planeB.normal(), planeC.normal());
+  double denom = dot(planeA.normal(), bcCross);
 
   if (denom == 0) {
-    result = Vector3(0);
+    result = Vector3d(0);
     return false;
   }
   else {
@@ -118,7 +118,7 @@ bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Pla
 
 // http://tavianator.com/2011/05/fast-branchless-raybounding-box-intersections/
 bool rayAabbIntersection(const Ray& ray, const AABB& aabb) {
-  Vector3 n_inv = Vector3(1.0) / ray.direction();
+  Vector3d n_inv = Vector3d(1.0) / ray.direction();
 
   double tx1 = (aabb.min().x() - ray.origin().x())*n_inv.x();
   double tx2 = (aabb.max().x() - ray.origin().x())*n_inv.x();
@@ -141,22 +141,23 @@ bool rayAabbIntersection(const Ray& ray, const AABB& aabb) {
   return tmax >= fmax(tmin, 0.0);
 }
 
-std::vector<Vector3> splitSphericalLineSegment(const Point& start, const Point& end, float deltaAngle) {
-  std::vector<Vector3> result;
+std::vector<Vector3d> splitSphericalLineSegment(const Point& start, const Point& end, double deltaAngle) {
+  std::vector<Vector3d> result;
 
   assert(start.position != -end.position);
 
   auto direction = normalize(cross(start.position, end.position));
-  float distance = acos(dot(start.position, end.position));
+  double distance = acos(dot(start.position, end.position));
 
   result.push_back(start.position);
 
-  for (float angle = deltaAngle; angle<distance; angle+=deltaAngle)
+  for (double angle = deltaAngle; angle<distance; angle+=deltaAngle)
   {
     //Mat4 rotation = rotate(Mat4(1.0), angle, direction);
-    Matrix4 rotation = Matrix4::rotation(Rad(angle), direction);
-    //Vector3 pos = normalize(Vector3(rotation * Vector4(start.position, 1.0)));
-    Vector3 pos = (rotation * Vector4(start.position, 1.f)).xyz().normalized(); //NOTE: .xyz() converts Vec4 to Vec3 as per glm semantics.
+    //Matrix4 rotation = Matrix4::rotation(Rad(static_cast<float>(angle)), direction);
+    Matrix4d rotation = Matrix4d::rotation(Rad{angle}, direction);
+    //Vector3d pos = normalize(Vector3d(rotation * Vector4(start.position, 1.0)));
+    Vector3d pos = (rotation * Vector4d(start.position, 1.f)).xyz().normalized(); //NOTE: .xyz() converts Vec4 to Vec3 as per glm semantics.
 
     result.push_back(pos);
   }
@@ -166,21 +167,21 @@ std::vector<Vector3> splitSphericalLineSegment(const Point& start, const Point& 
   return result;
 }
 
-float lagrangeInterpolate(float x, const std::vector<float>& xArray, const std::vector<float>& yArray) {
+double lagrangeInterpolate(double x, const std::vector<double>& xArray, const std::vector<double>& yArray) {
   assert(xArray.size() == yArray.size());
 
-  float sum = 0.0;
+  double sum = 0.0;
   for (unsigned int i = 0; i < xArray.size(); ++i)
   {
-    float Xi, Yi;
+    double Xi, Yi;
     Xi = xArray[i];
     Yi = yArray[i];
-    float factor = 1.0;
+    double factor = 1.0;
     for (unsigned int j = 0; j < xArray.size(); ++j)
     {
       if (i != j)
       {
-        float Xj = xArray[j];
+        double Xj = xArray[j];
         factor *= (x - Xj) / (Xi - Xj);
       }
     }
@@ -189,75 +190,75 @@ float lagrangeInterpolate(float x, const std::vector<float>& xArray, const std::
   return sum;
 }
 
-float interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<float>& values) {
-  float totalSqrDistance = std::accumulate(points.begin(), points.end(), 0.0, [p0](float res, const Point& p) {
-                                                                                float d = p.sphericalDistance(p0);
-                                                                                return res + d * d;
+double interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<double>& values) {
+  double totalSqrDistance = std::accumulate(points.begin(), points.end(), 0.0, [p0](double res, const Point& p) {
+                                                                                 double d = p.sphericalDistance(p0);
+                                                                                 return res + d * d;
                                                                               });
 
-  float sum = 0.0;
-  float weight = 0.0;
+  double sum = 0.0;
+  double weight = 0.0;
 
   for (size_t i = 0; i < points.size(); ++i)
   {
     const Point& p = points[i];
-    float d = p.sphericalDistance(p0);
-    float w = (totalSqrDistance - d*d) / totalSqrDistance;
+    double d = p.sphericalDistance(p0);
+    double w = (totalSqrDistance - d*d) / totalSqrDistance;
     sum += w * values[i];
     weight += w;
   }
   return sum / weight;
 }
 
-float computeTriangleArea(const Vector3& p0, const Vector3& p1, const Vector3& p2) {
-  Vector3 v12 = p2 - p1;
-  Vector3 v02 = p2 - p0;
-  Vector3 v12n = normalize(v12);
-  float t = dot(v02, v12n);
-  Vector3 c = p2 - v12n * t;
-  float d = distance(p0, c);
-  float l12 = length(v12);
+double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2) {
+  Vector3d v12 = p2 - p1;
+  Vector3d v02 = p2 - p0;
+  Vector3d v12n = normalize(v12);
+  double t = dot(v02, v12n);
+  Vector3d c = p2 - v12n * t;
+  double d = distance(p0, c);
+  double l12 = length(v12);
   return l12 * d * 0.5;
 }
 
-void faceAxisDirection(ECubeFace face, Vector3& s_dir, Vector3& t_dir, Vector3& p_dir) {
+void faceAxisDirection(ECubeFace face, Vector3d& s_dir, Vector3d& t_dir, Vector3d& p_dir) {
   switch (face)
   {
     case CF_POSX:
-      p_dir = Vector3(1, 0, 0);
-      s_dir = Vector3(0, 0, -1);
-      t_dir = Vector3(0, 1, 0);
+      p_dir = Vector3d(1, 0, 0);
+      s_dir = Vector3d(0, 0, -1);
+      t_dir = Vector3d(0, 1, 0);
       break;
     case CF_NEGX:
-      p_dir = Vector3(-1, 0, 0);
-      s_dir = Vector3(0, 0, 1);
-      t_dir = Vector3(0, 1, 0);
+      p_dir = Vector3d(-1, 0, 0);
+      s_dir = Vector3d(0, 0, 1);
+      t_dir = Vector3d(0, 1, 0);
       break;
     case CF_POSY:
-      p_dir = Vector3(0, 1, 0);
-      s_dir = Vector3(0, 0, 1);
-      t_dir = Vector3(1, 0, 0);
+      p_dir = Vector3d(0, 1, 0);
+      s_dir = Vector3d(0, 0, 1);
+      t_dir = Vector3d(1, 0, 0);
       break;
     case CF_NEGY:
-      p_dir = Vector3(0, -1, 0);
-      s_dir = Vector3(0, 0, 1);
-      t_dir = Vector3(-1, 0, 0);
+      p_dir = Vector3d(0, -1, 0);
+      s_dir = Vector3d(0, 0, 1);
+      t_dir = Vector3d(-1, 0, 0);
       break;
     case CF_POSZ:
-      p_dir = Vector3(0, 0, 1);
-      s_dir = Vector3(1, 0, 0);
-      t_dir = Vector3(0, 1, 0);
+      p_dir = Vector3d(0, 0, 1);
+      s_dir = Vector3d(1, 0, 0);
+      t_dir = Vector3d(0, 1, 0);
       break;
     case CF_NEGZ:
-      p_dir = Vector3(0, 0, -1);
-      s_dir = Vector3(-1, 0, 0);
-      t_dir = Vector3(0, 1, 0);
+      p_dir = Vector3d(0, 0, -1);
+      s_dir = Vector3d(-1, 0, 0);
+      t_dir = Vector3d(0, 1, 0);
       break;
     default:
       assert(0);
-      p_dir = Vector3(1, 0, 0);
-      s_dir = Vector3(0, 0, -1);
-      t_dir = Vector3(0, 1, 0);
+      p_dir = Vector3d(1, 0, 0);
+      s_dir = Vector3d(0, 0, -1);
+      t_dir = Vector3d(0, 1, 0);
   }
 }
 }

@@ -1,6 +1,7 @@
 #include "SphereDrawable.h"
 #include <iostream>
-namespace Magnum {
+namespace Terrific {
+using namespace Magnum;
 
 SphereDrawable::SphereDrawable(Object3D& object,
                                SceneGraph::DrawableGroup3D* group,
@@ -10,7 +11,7 @@ SphereDrawable::SphereDrawable(Object3D& object,
                                std::vector<Color3> const &colors
                                ): SceneGraph::Drawable3D{object, group}
 {
-  using namespace Math::Literals;
+  using namespace Magnum::Math::Literals;
 #if 0
   _phongShader
       .setAmbientColor(0x111111_rgbf)
@@ -54,7 +55,7 @@ SphereDrawable::SphereDrawable(Object3D& object,
 }
 
 void SphereDrawable::draw(const Matrix4& transformationMatrix, SceneGraph::Camera3D &camera) {
-  using namespace Math::Literals;
+  using namespace Magnum::Math::Literals;
 #if 1
   _phongShader
       .setDiffuseColor(0xa5c9ea_rgbf)

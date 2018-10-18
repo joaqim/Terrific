@@ -31,7 +31,6 @@ namespace Terrific {
     typedef std::shared_ptr<CircleEvent> CircleEvent_ptr;
 
 
-    typedef Magnum::Math::Vector3<float> Vector3;
     typedef Math::Point Point;
 
     class Cell {
@@ -125,8 +124,8 @@ namespace Terrific {
       SiteEvent(std::shared_ptr<Cell> Cell_);
 
       std::shared_ptr<Cell> pCell;
-      float theta;
-      float phi;
+      double theta;
+      double phi;
 
       bool operator< (const SiteEvent& right) const;
       bool operator>=(const SiteEvent& right) const;
@@ -155,9 +154,9 @@ namespace Terrific {
       Cell_ptr cell_k() const { return arc_k->pCell; }
 
       Point circle_center;
-      float circle_radius;
+      double circle_radius;
 
-      float theta;        // the lowest point on circle
+      double theta;        // the lowest point on circle
 
       bool operator< (const CircleEvent& ce) const;
 
@@ -174,12 +173,12 @@ namespace Terrific {
 
     class SphericalVoronoi {
    public:
-      SphericalVoronoi(const std::vector<Vector3>& directions, bool const debugMode_=false);
+      SphericalVoronoi(const std::vector<Vector3d>& directions, bool const debugMode_=false);
 
       void setDebugMode(bool debugMode);
 
       bool isFinished() const;
-      void step(float maxDeltaXi);
+      void step(double maxDeltaXi);
       void solve(std::function<void(int)> cb = nullptr);       // step until finished
 
       const std::vector<HalfEdge_ptr>& getHalfEdges() const { return halfEdges; }
@@ -208,19 +207,19 @@ namespace Terrific {
 
       beach_type::const_iterator getNextArcOnBeach(beach_type::const_iterator it) const;
 
-      bool intersectWithNextArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const;
-      bool intersectWithPrevArc(beach_type::const_iterator itArc, float xi, Point& oPoint) const;
+      bool intersectWithNextArc(beach_type::const_iterator itArc, double xi, Point& oPoint) const;
+      bool intersectWithPrevArc(beach_type::const_iterator itArc, double xi, Point& oPoint) const;
       void handleSiteEvent(SiteEvent& event);
       void handleCircleEvent(const CircleEvent_ptr& event);
 
-      static Point thetaToPoint(float theta, bool positive, float xi, float theta1, float phi1);
-      static Point phiToPoint(float phi, float xi, float theta1, float phi1);
-      static bool arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, float xi, Point& oPoint);
+      static Point thetaToPoint(double theta, bool positive, double xi, double theta1, double phi1);
+      static Point phiToPoint(double phi, double xi, double theta1, double phi1);
+      static bool arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, double xi, Point& oPoint);
 
       int nbSteps;
       Math::SphericalLine scanLine;
 
-      constexpr static float eps = 1e-5;
+      constexpr static double eps = 1e-5;
 
       std::vector<HalfEdge_ptr> halfEdges;
       std::vector<Vertex_ptr> vertices;

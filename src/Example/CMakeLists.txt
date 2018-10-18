@@ -45,13 +45,14 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 list(APPEND SOURCES
   main.cpp
   Application.cpp
-  SphereDrawable.cpp
+  #SphereDrawable.cpp
   Bitmap.cpp
+  Planet.cpp
   )
 
 # Corrade Resources
-#corrade_add_resource(MyApplication_RESOURCES ${PROJECT_SOURCE_DIR}/data/resources.conf)
-#list(APPEND SOURCES ${MyApplication_RESOURCES}) 
+corrade_add_resource(MyApplication_RESOURCES ${CMAKE_SOURCE_DIR}/data/resources.conf)
+list(APPEND SOURCES ${MyApplication_RESOURCES}) 
 
 if(NOT CORRADE_TARGET_ANDROID)
   add_executable(MyApplication ${SOURCES})

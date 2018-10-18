@@ -16,16 +16,24 @@
 #include <Magnum/Trade/ImageData.h>
 #include <Corrade/Containers/Optional.h>
 #include <Corrade/Containers/Array.h>
+#include <Magnum/SceneGraph/MatrixTransformation3D.h>
+
+#include <Magnum/Trade/AbstractImporter.h>
 
 #include <Terrific/Geometry/SphericalVoronoi.h>
 #include <Terrific/GL/SphereDrawable.h>
 
+#include <Corrade/Utility/Resource.h>
+
 #include "Bitmap.h"
+#include "Planet.h"
 #include <FastNoiseSIMD.h>
 
 namespace Magnum {
 
   using Terrific::Geometry::SphericalVoronoi;
+  typedef SceneGraph::Object<SceneGraph::MatrixTransformation3D> Object3D;
+  typedef SceneGraph::Scene<SceneGraph::MatrixTransformation3D> Scene3D;
 
   class Application: public Platform::Application {
  public:
@@ -35,7 +43,7 @@ namespace Magnum {
     void drawEvent() override;
 
  private:
-    Vector3 positionOnSphere(const Vector2i& position) const;
+    Vector3f positionOnSphere(const Vector2i& position) const;
 #ifndef CORRADE_TARGET_ANDROID
     void viewportEvent(ViewportEvent &event) override;
     void mouseScrollEvent(MouseScrollEvent& event);
@@ -50,13 +58,14 @@ namespace Magnum {
     void CreateColors(std::size_t const count);
 
  private:
-    SphericalVoronoi *_pSv;
-    SphereDrawable *sphere;
+    //SphericalVoronoi *_pSv;
+    Terrific::Planet *_pSv;
+    Terrific::GL::SphereDrawable *sphere;
 
     std::vector<Color3> _colors;
  private:
     Containers::Array<Containers::Optional<GL::Texture2D>> _textures;
-
+    GL::Texture2D _texture;
  private:
     Scene3D _scene;
     SceneGraph::DrawableGroup3D _drawables;
@@ -66,7 +75,7 @@ namespace Magnum {
     Matrix4 _viewMatrix;
 
 
-    Vector3 _mainCameraVelocity;
-    Vector3 _previousPosition;
+    Vector3f _mainCameraVelocity;
+    Vector3f _previousPosition;
   };
 }
