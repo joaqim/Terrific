@@ -11,3 +11,6 @@
 [submodule "third_party/repos/FastNoiseSIMD"]
 	path = third_party/repos/FastNoiseSIMD
 	url = https://github.com/Auburns/FastNoiseSIMD
+[submodule "toolchains"]
+	path = toolchains
+	url = https://github.com/mosra/toolchains

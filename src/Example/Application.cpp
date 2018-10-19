@@ -186,17 +186,17 @@ inline Vector2f getUVCoords(Magnum::Math::Vector3<T> const &p) {
   return Vector2f{static_cast<float>(u), static_cast<float>(v)};
 }
 
-  inline void addVerticesAndNormals(Vector3d const &p1, Vector3d const &p2, Vector3d const &p3, std::vector<Vector3f> &vertices, std::vector<Vector3f> &normals, std::vector<Vector2> &uvs) {
-    vertices.emplace_back(p1);
-    vertices.emplace_back(p2);
-    vertices.emplace_back(p3);
+inline void addVerticesAndNormals(Vector3d const &p1, Vector3d const &p2, Vector3d const &p3, std::vector<Vector3f> &vertices, std::vector<Vector3f> &normals, std::vector<Vector2> &uvs) {
+  vertices.emplace_back(p1);
+  vertices.emplace_back(p2);
+  vertices.emplace_back(p3);
 
-    std::fill_n(std::back_inserter(normals), 3, CalculateSurfaceNormal(p1, p2, p3));
+  std::fill_n(std::back_inserter(normals), 3, CalculateSurfaceNormal(p1, p2, p3));
 
-    uvs.emplace_back(getUVCoords(p1));
-    uvs.emplace_back(getUVCoords(p2));
-    uvs.emplace_back(getUVCoords(p3));
-  }
+  uvs.emplace_back(getUVCoords(p1));
+  uvs.emplace_back(getUVCoords(p2));
+  uvs.emplace_back(getUVCoords(p3));
+}
 
 void fillVectors(
     std::vector<HalfEdge_ptr> const &edges,
@@ -223,14 +223,12 @@ void fillVectors(
     meshVertices.push_back(static_cast<Vector3f>(te->pCell->point.position));
     meshNormals.push_back(CalculateSurfaceNormal(te->pCell->point.position, te->start->point.position, te->end->point.position));
 
-    //meshVertices.push_back(te->start->point.position);
-    //meshVertices.push_back(te->end->point.position);
     meshIndices.push_back(count++);
     meshIndices.push_back(count - 2);
     meshIndices.push_back(count - 3);
   }
   //break;
-  #define REMOVE_DUPS
+#define REMOVE_DUPS
 #ifdef REMOVE_DUPS
   {
     //#define TEST_CUBE
@@ -311,15 +309,35 @@ void fillVectors(
 #endif
 
 }
-
+#if 1
+void fillVectors(
+    std::vector<Cell_ptr> const &cells,
+    std::vector<Vector3f> &meshVertices,
+    std::vector<Vector3f> &meshNormals,
+    std::vector<UnsignedInt> &meshIndices,
+    std::vector<Color3> &meshColors,
+    std::vector<Vector2> &meshUVs,
+    std::vector<Color3> &colors)
+{
+  auto count = UnsignedInt{0};
+  for(auto const &c : cells) {
+    meshVertices.emplace_back(c->point.position);
+    meshIndices.emplace_back(count++);
+    meshNormals.emplace_back(c->point.position.normalized());
+    meshUVs.emplace_back(getUVCoords(c->point.position));
+    meshColors.emplace_back(colors[count%255]);
+  }
+}
+#endif
 
 Application::Application(const Arguments& arguments) :
     Platform::Application{arguments} {
   using namespace Math::Literals;
   GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
   GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
+  //GL::Renderer::setFrontFace(GL::Renderer::FrontFace::ClockWise);
   {
-    _pCameraObject = new Object3D{&_scene};
+        _pCameraObject = new Object3D{&_scene};
     _pCameraObject->translate(Vector3f::zAxis(5.0f));
     _pCamera = new SceneGraph::Camera3D(*_pCameraObject);
 
@@ -338,87 +356,98 @@ Application::Application(const Arguments& arguments) :
     (*_pManipulator)
         .scale(Vector3f{2.0f, 2.0f,2.0f});
 #if 0
-        (*_pManipulator)
-            .translate(Vector3f::yAxis(-0.3f))
-            .rotateX(Math::Rad<float>(30.f));
-        //.rotateX(30.0_degf);
+    (*_pManipulator)
+        .translate(Vector3f::yAxis(-0.3f))
+        .rotateX(Math::Rad<float>(30.f));
+    //.rotateX(30.0_degf);
 #endif
   }
 
-  auto const genPoints = generatePoints(1800);
+  auto const genPoints = generatePoints(180);
   //_pSv = new SphericalVoronoi(genPoints, false);
-   _pSv = new Terrific::Planet(*_pManipulator, &_drawables, genPoints, false);
+  _pSv = new Terrific::Planet(*_pManipulator, &_drawables, genPoints, false);
 #if 0
-   auto bitmap = CreateTexture(512, 512);
-   bitmap->SaveBitmap("texture.bmp");
+  auto bitmap = CreateTexture(512, 512);
+  bitmap->SaveBitmap("texture.bmp");
 
-   delete bitmap;
+  delete bitmap;
 #endif
 
-   CreateColors(256);
+  CreateColors(256);
 
-   _pSv->solve();
+  _pSv->solve();
 
-   auto cells = _pSv->getCells();
-   auto vertices = _pSv->getVertices();
-   auto edges = _pSv->getHalfEdges();
+  auto cells = _pSv->getCells();
+  auto vertices = _pSv->getVertices();
+  auto edges = _pSv->getHalfEdges();
 
 
-   //smoothLaplacian(cells, vertices, 1);
-   //smoothLaplacian(_pSv->getCells(), _pSv->getVertices(), 20);
+  //smoothLaplacian(cells, vertices, 1);
+  //smoothLaplacian(_pSv->getCells(), _pSv->getVertices(), 20);
 
-   std::vector<Vector3f> meshVertices;
-   std::vector<UnsignedInt> meshIndices;
-   std::vector<Vector3ui> meshFaces;
+  std::vector<Vector3f> meshVertices;
+  std::vector<UnsignedInt> meshIndices;
+  std::vector<Vector3ui> meshFaces;
 
-   std::vector<Vector3f> meshNormals;
-   std::vector<Color3> meshColors;
-   std::vector<Vector2> meshUVs;
+  std::vector<Vector3f> meshNormals;
+  std::vector<Color3> meshColors;
+  std::vector<Vector2> meshUVs;
 
 #if 1
-   fillVectors(
-       edges,
-       meshVertices,
-       meshNormals,
-       meshIndices,
-       meshColors,
-       meshUVs,
-       _colors);
+  fillVectors(
+              edges,
+              meshVertices,
+              meshNormals,
+              meshIndices,
+              meshColors,
+              meshUVs,
+              _colors);
+#else
+  fillVectors(
+              cells,
+              meshVertices,
+              meshNormals,
+              meshIndices,
+              meshColors,
+              meshUVs,
+              _colors);
 #endif
 
-   _pSv->generateMesh(
-       meshVertices,
-       meshNormals,
-       meshIndices,
-       meshColors,
-       meshUVs);
+  _pSv->generateMesh(
+                     meshVertices,
+                     meshNormals,
+                     meshIndices,
+                     meshColors,
+                     meshUVs);
 
-   const Utility::Resource rs{"data"};
-   PluginManager::Manager<Trade::AbstractImporter> manager;
-   std::unique_ptr<Trade::AbstractImporter> importer = manager.loadAndInstantiate("TgaImporter");
-   if(!importer) std::exit(1);
-   if(!importer->openData(rs.getRaw("stone.tga")))
+  const Utility::Resource rs{"data"};
+  PluginManager::Manager<Trade::AbstractImporter> manager;
+  std::unique_ptr<Trade::AbstractImporter> importer = manager.loadAndInstantiate("TgaImporter");
+  if(!importer) std::exit(1);
+  if(!importer->openData(rs.getRaw("stone.tga")))
     std::exit(2);
   Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
   CORRADE_INTERNAL_ASSERT(image);
 
   _texture
-      //.setWrapping(GL::SamplerWrapping::ClampToEdge)
-      .setWrapping(GL::SamplerWrapping::MirroredRepeat)
-      .setMagnificationFilter(GL::SamplerFilter::Linear)
-      .setMinificationFilter(GL::SamplerFilter::Linear)
-      .setStorage(1, GL::TextureFormat::RGB8, image->size())
-      .setSubImage(0, {}, *image);
+    //.setWrapping(GL::SamplerWrapping::ClampToEdge)
+    //.setWrapping(GL::SamplerWrapping::MirroredRepeat)
+    //.setWrapping(GL::SamplerWrapping::ClampToBorder)
+    .setWrapping(GL::SamplerWrapping::Repeat)
+    .setMagnificationFilter(GL::SamplerFilter::Linear)
+    .setMinificationFilter(GL::SamplerFilter::Linear)
+    .setStorage(1, GL::TextureFormat::RGB8, image->size())
+    .setSubImage(0, {}, *image);
   _pSv->setTexture(_texture);
 
 #if 0
 #if 0
   new SphereDrawable{*_pManipulator, &_drawables,
-      meshVertices,
-      meshNormals,
-      meshIndices,
-      meshColors
-      };
+        meshVertices,
+        meshNormals,
+        meshIndices,
+        meshColors
+        };
 #else
   sphere = new SphereDrawable{*_pManipulator, &_drawables,
                               meshVertices,
