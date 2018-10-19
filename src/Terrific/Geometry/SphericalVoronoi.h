@@ -1,8 +1,7 @@
 #pragma once
 
-#include <Terrific/Math/Types.h>
-
 #include <Magnum/Math/Vector3.h>
+#include <Terrific/Math/Types.h>
 
 #include <memory> // shared_ptr
 #include <vector> // vector
@@ -144,11 +143,6 @@ namespace Terrific {
       BeachArc_ptr arc_j;
       BeachArc_ptr arc_k;
 
-#if 0
-      Cell_ptr Cell_i() const;
-      Cell_ptr Cell_j() const;
-      Cell_ptr Cell_k() const;
-#endif
       Cell_ptr cell_i() const { return arc_i->pCell; }
       Cell_ptr cell_j() const { return arc_j->pCell; }
       Cell_ptr cell_k() const { return arc_k->pCell; }
@@ -160,7 +154,6 @@ namespace Terrific {
 
       bool operator< (const CircleEvent& ce) const;
 
-      //friend std::ostream& operator<< (std::ostream& stream, const CircleEvent& e);
       friend std::ostream& operator<< (std::ostream& stream, const CircleEvent& e) {
         stream << "[" << e.cell_i()->index << "," << e.cell_j()->index << "," << e.cell_k()->index << "] " << "theta " << e.theta;
         return stream;
