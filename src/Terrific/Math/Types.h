@@ -14,6 +14,9 @@ typedef float real32;
 typedef double real64;
 #endif
 
+#include <Magnum/Types.h>
+typedef Magnum::UnsignedInt UnsignedInt; 
+
 #include <Magnum/Math/Vector.h>
 
 typedef Magnum::Math::Rad<double> Rad;
@@ -29,4 +32,8 @@ typedef Magnum::Math::Vector3<double> Vector3d;
 typedef Magnum::Math::Vector4<double> Vector4d;
 typedef Magnum::Math::Matrix4<double> Matrix4d;
 
+#include <Magnum/Math/Color.h>
+
+typedef Magnum::Math::Color3<float> Color3;
+typedef Magnum::Math::Color4<float> Color4;
 

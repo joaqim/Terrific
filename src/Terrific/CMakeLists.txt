@@ -4,14 +4,11 @@ configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake 
 	${CMAKE_CURRENT_BINARY_DIR}/configure.h)
 
-
-set(Terrific_SRCS Impl/StringCast.cpp)
+set(Terrific_SRCS
+  Terrific.cpp
+  )
 set(Terrific_HEADERS 
-	Impl/JsonCast.h
-	Impl/JsonCast.inl
-	Impl/MovieInfo.h
-	Impl/Person.h
-	Impl/StringCast.h
+  Terrific.h
 	)
 
 add_library(TerrificObjects OBJECT
@@ -46,11 +43,18 @@ install(FILES ${Terrific_HEADERS} DESTINATION ${TERRIFIC_INCLUDE_INSTALL_DIR})
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/configure.h DESTINATION ${TERRIFIC_INCLUDE_INSTALL_DIR})
 
-
+if(WITH_MATH)
 add_subdirectory(Math)
+endif()
+if(WITH_SYSTEM)
 add_subdirectory(System)
+endif()
+if(WITH_GEOMETRY)
 add_subdirectory(Geometry)
+endif()
+if(WITH_GL)
 add_subdirectory(GL)
+endif()
 
 if(BUILD_TESTS) 
 	#  add_subdirectory(Test) 

@@ -224,7 +224,7 @@ namespace Terrific {
 
       std::vector<SiteEvent> siteEventQueue;
       std::vector<CircleEvent_ptr> circleEventQueue;
-      std::set<std::weak_ptr<CircleEvent>, std::owner_less<>> circleEventDeletedEvents;
+      std::set<std::weak_ptr<CircleEvent>, std::owner_less<std::weak_ptr<CircleEvent>>> circleEventDeletedEvents;
 
       void addNewSiteEvent(const SiteEvent& event);
 
