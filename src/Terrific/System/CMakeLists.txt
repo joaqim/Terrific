@@ -31,6 +31,8 @@ add_library(TerrificSystem ${SHARED_OR_STATIC}
 
 	$<TARGET_OBJECTS:TerrificSystemObjects>)
 
+set_target_properties(TerrificSystem PROPERTIES COMPILE_FLAGS "-fPIC")
+
 set_target_properties(TerrificSystem PROPERTIES 
 	DEBUG_POSTFIX "-d" 
 	FOLDER "Terrific/System")

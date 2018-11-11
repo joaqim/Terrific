@@ -28,10 +28,11 @@ target_include_directories(TerrificMathObjects PUBLIC
 	)
 
 set_target_properties(TerrificMathObjects PROPERTIES FOLDER "Terrific/Math")
+set_target_properties(TerrificMathObjects PROPERTIES COMPILE_FLAGS "-fPIC")
 
 add_library(TerrificMath ${SHARED_OR_STATIC}
 	$<TARGET_OBJECTS:TerrificMathObjects>)
-
+set_target_properties(TerrificMath PROPERTIES COMPILE_FLAGS "-fPIC")
 set_target_properties(TerrificMath PROPERTIES 
 	DEBUG_POSTFIX "-d" 
 	FOLDER "Terrific/Math")
