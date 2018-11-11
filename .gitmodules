@@ -14,3 +14,6 @@
 [submodule "toolchains"]
 	path = toolchains
 	url = https://github.com/mosra/toolchains
+[submodule "third_party/repos/spdlog"]
+	path = third_party/repos/spdlog
+	url = https://github.com/gabime/spdlog

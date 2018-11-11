@@ -27,6 +27,7 @@ list(APPEND LIBRARIES
 
   Terrific::Geometry
   Terrific::Math
+  Terrific::Utility
   Terrific::GL
   )
 

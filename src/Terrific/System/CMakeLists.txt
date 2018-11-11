@@ -7,8 +7,14 @@ endif (POLICY CMP0048)
 
 project(TerrificSystem VERSION 1 LANGUAGES CXX)
 
-set(TerrificSystem_SRCS SerializeClass.cpp)
-set(TerrificSystem_HEADERS SerializeClass.h)
+set(TerrificSystem_SRCS
+  Application.cpp
+  SerializeClass.cpp
+  )
+set(TerrificSystem_HEADERS
+  Application.cpp
+  SerializeClass.h
+  )
 
 add_library(TerrificSystemObjects OBJECT
 	${TerrificSystem_SRCS}
@@ -29,7 +35,18 @@ set_target_properties(TerrificSystem PROPERTIES
 	DEBUG_POSTFIX "-d" 
 	FOLDER "Terrific/System")
 
-target_link_libraries(TerrificSystem Terrific)
+if(NOT CORRADE_TARGET_ANDROID)
+  find_package(Magnum REQUIRED Sdl2Application)
+  find_package(SDL2)
+  if(NOT SDL2_FOUND)
+    message(FATAL_ERROR "SDL2 library, required by Sdl2Application, was not found. Set WITH_SDL2APPLICATION to OFF to skip building it.")
+  endif()
+  target_include_directories(TerrificSystem PRIVATE ${SDL2_INCLUDE_DIR})
+else()
+  find_package(Magnum REQUIRED AndroidApplication)
+endif()
+
+target_link_libraries(TerrificSystem Terrific Magnum::Application)
 
 add_library(Terrific::System ALIAS TerrificSystem)
 
@@ -68,5 +85,5 @@ install(FILES ${TerrificSystem_HEADERS} DESTINATION ${TERRIFIC_INCLUDE_INSTALL_D
 
 
 if(BUILD_TESTS)
-		add_subdirectory(Test)
+	add_subdirectory(Test)
 endif()

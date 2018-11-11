@@ -1,10 +1,35 @@
 #g++ src/*.cpp -Ithird_party/repos/MetaStuff/include -Ithird_party/include -o a.out -std=c++17
-mkdir -p build
-set -x
-cd build
+CMAKE_FLAGS="\
+ -DBUILD_TESTS=OFF \
+ -DWITH_GL=ON \
+ -DWITH_UTILITY=ON \
+ -DWITH_MATH=ON \
+ -DWITH_SYSTEM=OFF \
+ -DWITH_GEOMETRY=ON \
+ "
 
-cmake .. -G "Ninja" -DBUILD_TESTS=OFF &&  \
-cmake --build . --config Debug && \
- ./src/Example/MyApplication
-#cd src/Terrific/System/Test && ./SystemTest
+mkdir -p build
+
+if [ "$1" == "clean" ]; then
+    git clean --exclude=data/savefile_dirs.txt -xi
+    exit $?
+fi
+
+set -e
+cd build 
+
+if [ "$1" == "ycm" ]; then
+	ycm_generator -vfb cmake .. --configure_opts="$CMAKE_FLAGS"
+    exit $?
+fi
+
+cmake .. -G "Ninja" \
+	$CMAKE_FLAGS 
+cmake --build . --config Debug
+
+if [ "$1" == "run" ]; then
+    ./src/Example/MyApplication
+    exit $?
+    #cd src/Terrific/System/Test && ./SystemTest
+fi
 
