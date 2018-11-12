@@ -8,12 +8,12 @@ endif (POLICY CMP0048)
 project(TerrificSystem VERSION 1 LANGUAGES CXX)
 
 set(TerrificSystem_SRCS
-  Application.cpp
+	#  Application.cpp
   SerializeClass.cpp
   )
 set(TerrificSystem_HEADERS
-  Application.cpp
-  SerializeClass.h
+	#Application.cpp
+	#  SerializeClass.h
   )
 
 add_library(TerrificSystemObjects OBJECT
@@ -78,6 +78,9 @@ target_include_directories(sol2 INTERFACE ${LUA53_INCLUDE_DIR})
 #target_link_libraries(sol2 ${LUA53_LIBRARIES})
 target_link_libraries(TerrificSystem sol2 ${LUA53_LIBRARIES})
 
+# ecst
+include_directories(${CMAKE_SOURCE_DIR}/third_party/repos/ecst/include)
+
 install(TARGETS TerrificSystem
 	RUNTIME DESTINATION ${TERRIFIC_BINARY_INSTALL_DIR}
 	LIBRARY DESTINATION ${TERRIFIC_LIBRARY_INSTALL_DIR}
@@ -87,5 +90,5 @@ install(FILES ${TerrificSystem_HEADERS} DESTINATION ${TERRIFIC_INCLUDE_INSTALL_D
 
 
 if(BUILD_TESTS)
-	add_subdirectory(Test)
+	#	add_subdirectory(Test)
 endif()

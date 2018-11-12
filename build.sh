@@ -1,8 +1,9 @@
 #g++ src/*.cpp -Ithird_party/repos/MetaStuff/include -Ithird_party/include -o a.out -std=c++17
 CMAKE_FLAGS="\
- -DBUILD_TESTS=OFF \
+ -DBUILD_TESTS=ON \
  -DWITH_GL=ON \
  -DWITH_UTILITY=ON \
+ -DWITH_META=ON \
  -DWITH_MATH=ON \
  -DWITH_SYSTEM=OFF \
  -DWITH_GEOMETRY=ON \

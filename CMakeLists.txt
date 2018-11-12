@@ -1,5 +1,5 @@
 #cmake_minimum_required(VERSION 3.12.2)
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.8.1)
 
 # CMake policies. 0025 needs to be before project(), so putting all there.
 # Use AppleClang instead of Clang on Apple

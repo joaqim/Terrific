@@ -5,7 +5,7 @@ if (POLICY CMP0048)
 endif (POLICY CMP0048)
 
 
-set(SYSTEM_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(META_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake 
@@ -13,14 +13,15 @@ configure_file(
 
 if(false)
 
-  add_executable(SystemTest Test.cpp)
+  add_executable(MetaTest MetaTest.cpp)
 
-  target_link_libraries(SystemTest Terrific TerrificSystem)
-  target_include_directories(SystemTest PUBLIC ${TERRIFIC_INCLUDE_DIR}
+  target_link_libraries(MetaTest Terrific TerrificMeta)
+  target_include_directories(MetaTest SYSTEM ${TERRIFIC_INCLUDE_DIR}
 	  ${PROJECT_SOURCE_DIR}/third_party/include
+	  ${PROJECT_SOURCE_DIR}/third_party/repos/sol2
 	  ${PROJECT_SOURCE_DIR}/third_party/repos/MetaStuff/include)
 
-  set_target_properties( SystemTest PROPERTIES FOLDER "Terrific/System/Test")
+  set_target_properties( MetaTest PROPERTIES FOLDER "Terrific/Meta/Test")
 
 else()
   find_package(Corrade REQUIRED TestSuite)
@@ -30,14 +31,14 @@ else()
 
   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/safe_reference.lua
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-  corrade_add_test(SystemTest
+  corrade_add_test(MetaTest
     SafeReference.cpp
-    #SerializationTest.cpp
-	  LIBRARIES Terrific TerrificSystem# ${LUA_LIBRARIES} sol2
-	)
+#    SerializationTest.cpp
+	  LIBRARIES Terrific TerrificMeta# ${LUA_LIBRARIES} sol2
+	  )
 
 target_include_directories(
-	SystemTest
+	MetaTest
 	PRIVATE 
 	${CMAKE_CURRENT_BINARY_DIR}
 	${TERRIFIC_INCLUDE_DIR}
@@ -46,8 +47,8 @@ target_include_directories(
 
 # List of Tests
 set_target_properties(
-	SystemTest
-	PROPERTIES FOLDER "Terrific/System/Test")
-set_target_properties(SystemTest PROPERTIES COMPILE_FLAGS "-w -Wunused-variable -Wmissing-prototypes") # Suppress Warnings
+	MetaTest
+	PROPERTIES FOLDER "Terrific/Meta/Test")
+#set_target_properties(MetaTest PROPERTIES COMPILE_FLAGS "-w -Wunused-variable -Wmissing-prototypes") # Suppress Warnings
 
 endif()

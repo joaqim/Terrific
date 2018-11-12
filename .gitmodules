@@ -17,3 +17,6 @@
 [submodule "third_party/repos/spdlog"]
 	path = third_party/repos/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "third_party/repos/ecst"]
+	path = third_party/repos/ecst
+	url = https://github.com/SuperV1234/ecst

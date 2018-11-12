@@ -4,7 +4,9 @@ project(TerrificUtility VERSION 1 LANGUAGES CXX)
 #set(CMAKE_CXX_STANDARD 17)
 add_library(TerrificUtility Log.cpp)
 
-find_package(spdlog CONFIG REQUIRED)
+add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/repos/spdlog ${CMAKE_BINARY_DIR}/spdlog)
+
+#find_package(spdlog CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
