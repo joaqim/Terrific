@@ -28,5 +28,5 @@ target_link_libraries(TerrificUtility spdlog::spdlog Threads::Threads)
 #add_executable(example example.cpp)
 #target_link_libraries(example TerrificUtility)
 
-
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/logs")
+#TODO: Temporary for debugging
+file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/build/logs")

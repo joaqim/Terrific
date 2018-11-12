@@ -37,7 +37,7 @@ std::vector<Vector3d> generatePoints(size_t const count) {
 
   std::uniform_real_distribution<> heightDistribution(-1.f, 1.f);
   std::uniform_real_distribution<> angleDistribution(0, 2 * M_PI);
-
+  
   using Magnum::Math::asin;
   using Magnum::Math::cos;
   using Magnum::Math::sin;
@@ -336,6 +336,7 @@ Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Mat
     // log Log
     CORRADE_ASSERT(Terrific::Utility::Log::init() == EXIT_SUCCESS, "Failed to initialize Terrific::Utility::Log",);
     TERRIFIC_INFO("Application starting up {0}", 1);
+    exit();
 
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);

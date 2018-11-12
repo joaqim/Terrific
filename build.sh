@@ -29,7 +29,9 @@ cmake --build . --config Debug
 
 if [ "$1" == "run" ]; then
     ./src/Example/MyApplication
-    exit $?
     #cd src/Terrific/System/Test && ./SystemTest
 fi
+
+#exit 24
+exit $?
 

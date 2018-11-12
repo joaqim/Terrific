@@ -21,6 +21,6 @@ set(TERRIFIC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "")
 
 
 #if(!BUILD_TESTS)
-#add_subdirectory(Example)
 #endif()
-add_subdirectory(TestPlanet)
+#add_subdirectory(TestPlanet)
+add_subdirectory(Example)
