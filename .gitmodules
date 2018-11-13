@@ -20,3 +20,6 @@
 [submodule "third_party/repos/ecst"]
 	path = third_party/repos/ecst
 	url = https://github.com/SuperV1234/ecst
+[submodule "third_party/repos/cereal"]
+	path = third_party/repos/cereal
+	url = https://github.com/xw0/cereal

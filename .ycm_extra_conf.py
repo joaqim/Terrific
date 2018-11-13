@@ -32,16 +32,19 @@
 
 import os
 import ycm_core
+import getpass
+user = getpass.getuser()
+
 
 flags = [
     '-x',
     'c++',
     '-DTerrificObjects_EXPORTS',
-    '-I/home/jq/projects/Terrific/src',
-    '-I/home/jq/projects/Terrific/src/Terrific/GL/../..',
-    '-I/home/jq/projects/Terrific/src/Terrific/Geometry/../..',
-    '-I/home/jq/projects/Terrific/src/Terrific/Math/../..',
-    '-I/home/jq/projects/Terrific/third_party/include',
+    '-I/home/' + user + '/projects/Terrific/src',
+    '-I/home/' + user + '/projects/Terrific/src/Terrific/GL/../..',
+    '-I/home/' + user + '/projects/Terrific/src/Terrific/Geometry/../..',
+    '-I/home/' + user + '/projects/Terrific/src/Terrific/Math/../..',
+    '-I/home/' + user + '/projects/Terrific/third_party/include',
     '-I/tmp/tmp5vRSvu',
     '-I/tmp/tmp5vRSvu/src',
     '-Wall',
@@ -54,8 +57,8 @@ flags = [
     '-Wold-style-cast',
     '-Wunused-parameter',
     '-std=gnu++17',
-    '-isystem', '/home/jq/.cache/yay/spdlog-git/src/spdlog/include',
-    '-isystem', '/home/jq/projects/Terrific/third_party/repos/FastNoiseSIMD/FastNoiseSIMD',
+    '-isystem', '/home/' + user + '/.cache/yay/spdlog-git/src/spdlog/include',
+    '-isystem', '/home/' + user + '/projects/Terrific/third_party/repos/FastNoiseSIMD/FastNoiseSIMD',
     '-isystem', '/usr/local/include',
     '-isystem', '/usr/local/include/MagnumExternal/OpenGL',
     '-isystem', '/usr/local/include/SDL2',

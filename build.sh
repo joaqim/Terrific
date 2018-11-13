@@ -9,13 +9,13 @@ CMAKE_FLAGS="\
  -DWITH_GEOMETRY=ON \
  "
 
-mkdir -p build
 
 if [ "$1" == "clean" ]; then
-    git clean --exclude=data/savefile_dirs.txt -xi
+    git clean --exclude=data/savefile_dirs.txt -xid
     exit $?
 fi
 
+mkdir -p build
 set -e
 cd build 
 
@@ -27,6 +27,7 @@ fi
 cmake .. -G "Ninja" \
 	$CMAKE_FLAGS 
 cmake --build . --config Debug
+./src/Terrific/Meta/Test/MetaTest
 
 if [ "$1" == "run" ]; then
     ./src/Example/MyApplication

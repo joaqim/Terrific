@@ -32,8 +32,9 @@ else()
   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/safe_reference.lua
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
   corrade_add_test(MetaTest
-    SafeReference.cpp
+	  #SafeReference.cpp
 #    SerializationTest.cpp
+CerealTest.cpp
 	  LIBRARIES Terrific TerrificMeta# ${LUA_LIBRARIES} sol2
 	  )
 

@@ -66,6 +66,8 @@ target_link_libraries(TerrificMeta sol2 ${LUA53_LIBRARIES})
 # ecst
 include_directories(${CMAKE_SOURCE_DIR}/third_party/repos/ecst/include)
 
+# cereal
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/third_party/repos/cereal/include)
 target_link_libraries(TerrificMeta Terrific)
 
 install(TARGETS TerrificMeta
