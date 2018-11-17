@@ -23,3 +23,22 @@
 [submodule "third_party/repos/cereal"]
 	path = third_party/repos/cereal
 	url = https://github.com/xw0/cereal
+[submodule "https:/github.com/SuperV1234/vrm_pp"]
+	path = third_party/repos/vrm_pp
+	url = https://github.com/SuperV1234/vrm_pp
+[submodule "https:/github.com/SuperV1234/vrm_core"]
+	path = third_party/repos/vrm_core
+	url = https://github.com/SuperV1234/vrm_core
+[submodule "https:/github.com/SuperV1234/vrm_cmake"]
+	path = third_party/repos/vrm_cmake
+	url = https://github.com/SuperV1234/vrm_cmake
+
+[submodule "third_party/repos/vrm_core"]
+	path = third_party/repos/vrm_core
+	url = https://github.com/SuperV1234/vrm_core
+[submodule "third_party/repos/vrm_pp"]
+	path = third_party/repos/vrm_pp
+	url = https://github.com/SuperV1234/vrm_pp
+[submodule "third_party/repos/vrm_cmake"]
+	path = third_party/repos/vrm_cmake
+	url = https://github.com/SuperV1234/vrm_cmake

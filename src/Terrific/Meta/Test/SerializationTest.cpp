@@ -1,11 +1,16 @@
 #include <iostream>
+#include <fstream>
 
 #include <json.hpp>
-#include <Terrific/Impl/Person.h>
-#include <Terrific/Impl/JsonCast.h>
-#include <Terrific/Impl/MovieInfo.h>
-#include <Terrific/Impl/StringCast.cpp>
+#include <Terrific/Meta/Person.h>
+#include <Terrific/Meta/JsonCast.h>
+#include <Terrific/Meta/MovieInfo.h>
+#include <Terrific/Meta/StringCast.cpp>
 
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp> 
 
 #include <Corrade/TestSuite/Tester.h>
 #include <Corrade/Utility/Assert.h>
@@ -18,12 +23,13 @@ class Unregistered
 struct SerializationTest : Corrade::TestSuite::Tester{
   explicit SerializationTest() {
     addTests({
-              &SerializationTest::initialize,
-              &SerializationTest::verifyMeta,
-              &SerializationTest::verifyMembers,
-              &SerializationTest::verifySettingMembers
+        &SerializationTest::initialize,
+            &SerializationTest::verifyMeta,
+            &SerializationTest::verifyMembers,
+            &SerializationTest::verifySettingMembers,
+            &SerializationTest::cerealSerialization
 
-      });
+            });
   }
 
   void initialize() {
@@ -78,9 +84,37 @@ struct SerializationTest : Corrade::TestSuite::Tester{
 #endif
   }
 
+  void cerealSerialization() {
+    {
+      std::ofstream ofs("out.json");
+      cereal::JSONOutputArchive archive( ofs ); 
+
+      archive(person1);
+    }
+    {
+      Person newPerson;
+      std::ifstream ifs("out.json");
+      cereal::JSONInputArchive archive_json( ifs );
+      archive_json(newPerson);
+
+      CORRADE_VERIFY(newPerson.name == person1.name);
+      CORRADE_VERIFY(newPerson.age == person1.age);
+      CORRADE_VERIFY(newPerson.salary == person1.salary);
+      CORRADE_VERIFY(newPerson.favouriteMovies["John Tron"][0].name == "Goosebumps");
+      CORRADE_VERIFY(newPerson.favouriteMovies["John Tron"][0].rating == 10.f);
+      CORRADE_VERIFY(newPerson.favouriteMovies["John Tron"][1].name == "Talking Cat");
+      CORRADE_VERIFY(newPerson.favouriteMovies["John Tron"][1].rating == 9.0f);
+      CORRADE_VERIFY(newPerson.favouriteMovies["Nostalgia Critic"][0].name == "The Room");
+      CORRADE_VERIFY(newPerson.favouriteMovies["Nostalgia Critic"][0].rating == 8.5f);
+    }
+  }
+
   void verifySettingMembers() {
-    meta::setMemberValue<std::string>(person1, "name", "Ron Burgundy");
-    auto name = meta::getMemberValue<std::string>(person1, "name");
+    std::string unused; 
+    meta::setMemberValue<decltype(unused)>(person1, "name", "Ron Burgundy");
+    //meta::setMemberValue<std::string>(person1, "name", "Ron Burgundy");
+    //auto name = meta::getMemberValue<std::string>(person1, "name");
+    auto name = meta::getMemberValue<decltype(unused)>(person1, "name");
     CORRADE_VERIFY(name == "Ron Burgundy");
   }
 

@@ -8,6 +8,10 @@
 
 #include <iostream>
 
+#include <cereal/types/unordered_map.hpp> 
+#include <cereal/types/string.hpp> 
+#include <cereal/types/vector.hpp> 
+
 struct Person {
     // add this if you want to register private members:
     // template <>
@@ -31,10 +35,16 @@ struct Person {
     return name;
   }
 
+	template <class Archive>
+  void serialize( Archive & ar )
+  {
+    ar( age, name, salary, favouriteMovies );
+  }
+
   int age;
-    std::string name;
-    float salary;
-    std::unordered_map<std::string, std::vector<MovieInfo>> favouriteMovies;
+  std::string name;
+  float salary;
+  std::unordered_map<std::string, std::vector<MovieInfo>> favouriteMovies;
 };
 
 #include <MetaStuff/Meta.h>

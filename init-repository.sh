@@ -9,4 +9,4 @@ echo "Discarding all submodule changes..."
 #git submodule foreach "git checkout . ; git reset --hard origin/master"
 
 echo "Recursively pulling all submodules..."
-git submodule foreach "git pull origin master"
+#git submodule foreach "git pull origin master"

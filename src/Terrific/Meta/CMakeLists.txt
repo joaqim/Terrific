@@ -64,7 +64,15 @@ target_include_directories(sol2 INTERFACE ${LUA53_INCLUDE_DIR})
 target_link_libraries(TerrificMeta sol2 ${LUA53_LIBRARIES})
 
 # ecst
-include_directories(${CMAKE_SOURCE_DIR}/third_party/repos/ecst/include)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/third_party/repos/ecst/include)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/third_party/repos/vrm_cmake/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/third_party/repos/vrm_pp/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/third_party/repos/vrm_core/cmake/")
+include(vrm_cmake)
+
+# Find `vrm_pp` and `vrm_core`:
+vrm_cmake_find_extlib(vrm_pp)
+vrm_cmake_find_extlib(vrm_core)
 
 # cereal
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/third_party/repos/cereal/include)
