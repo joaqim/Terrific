@@ -17,6 +17,7 @@ add_library(TerrificObjects OBJECT
 target_include_directories(TerrificObjects PUBLIC
 	${PROJECT_SOURCE_DIR}/src
 	${PROJECT_BINARY_DIR}/src)
+
 if(NOT BUILD_STATIC) 
 	target_compile_definitions(TerrificObjects PRIVATE "TerrificObjects_EXPORTS") 
 endif() 
@@ -43,20 +44,21 @@ install(FILES ${Terrific_HEADERS} DESTINATION ${TERRIFIC_INCLUDE_INSTALL_DIR})
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/configure.h DESTINATION ${TERRIFIC_INCLUDE_INSTALL_DIR})
 
+
 if(WITH_UTILITY)
-add_subdirectory("Utility")
+	add_subdirectory("Utility")
 endif()
 if(WITH_MATH)
-add_subdirectory("Math")
+	add_subdirectory("Math")
 endif()
 if(WITH_META)
 	add_subdirectory("Meta")
 endif()
 if(WITH_GEOMETRY)
-add_subdirectory("Geometry")
+	add_subdirectory("Geometry")
 endif()
 if(WITH_GL)
-add_subdirectory("GL")
+	add_subdirectory("GL")
 endif()
 
 if(BUILD_TESTS) 

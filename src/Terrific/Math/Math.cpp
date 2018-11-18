@@ -36,8 +36,7 @@ std::tuple<Vector3d, CubeFaceBitSet> Point::cubeCoord() const {
       faceSet |= (position.z() > 0 ? CF_POSZ_BITMASK : CF_NEGZ_BITMASK);
     }
   }
-  else if (absPos.x() >= fmax(absPos.y(), absPos.z()))
-  {
+  else {
     ratio = 1.0 / absPos.x();
     faceSet |= (position.x() > 0 ? CF_POSX_BITMASK : CF_NEGX_BITMASK);
     if (absPos.x() == absPos.y())
@@ -168,7 +167,9 @@ std::vector<Vector3d> splitSphericalLineSegment(const Point& start, const Point&
 }
 
 double lagrangeInterpolate(double x, const std::vector<double>& xArray, const std::vector<double>& yArray) {
+#ifdef TERRIFIC_DEBUG
   assert(xArray.size() == yArray.size());
+#endif
 
   double sum = 0.0;
   for (unsigned int i = 0; i < xArray.size(); ++i)
@@ -210,57 +211,57 @@ double interpolateSphericalSamples(const Point& p0, const std::vector<Point>& po
   return sum / weight;
 }
 
-double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2) {
-  Vector3d v12 = p2 - p1;
-  Vector3d v02 = p2 - p0;
-  Vector3d v12n = normalize(v12);
-  double t = dot(v02, v12n);
-  Vector3d c = p2 - v12n * t;
-  double d = distance(p0, c);
-  double l12 = length(v12);
-  return l12 * d * 0.5;
-}
+  double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2) {
+    Vector3d v12 = p2 - p1;
+    Vector3d v02 = p2 - p0;
+    Vector3d v12n = normalize(v12);
+    double t = dot(v02, v12n);
+    Vector3d c = p2 - v12n * t;
+    double d = distance(p0, c);
+    double l12 = length(v12);
+    return l12 * d * 0.5;
+  }
 
 void faceAxisDirection(ECubeFace face, Vector3d& s_dir, Vector3d& t_dir, Vector3d& p_dir) {
   switch (face)
   {
     case CF_POSX:
       p_dir = Vector3d(1, 0, 0);
-      s_dir = Vector3d(0, 0, -1);
-      t_dir = Vector3d(0, 1, 0);
-      break;
-    case CF_NEGX:
-      p_dir = Vector3d(-1, 0, 0);
-      s_dir = Vector3d(0, 0, 1);
-      t_dir = Vector3d(0, 1, 0);
-      break;
-    case CF_POSY:
-      p_dir = Vector3d(0, 1, 0);
-      s_dir = Vector3d(0, 0, 1);
-      t_dir = Vector3d(1, 0, 0);
-      break;
-    case CF_NEGY:
-      p_dir = Vector3d(0, -1, 0);
-      s_dir = Vector3d(0, 0, 1);
-      t_dir = Vector3d(-1, 0, 0);
-      break;
-    case CF_POSZ:
-      p_dir = Vector3d(0, 0, 1);
-      s_dir = Vector3d(1, 0, 0);
-      t_dir = Vector3d(0, 1, 0);
-      break;
-    case CF_NEGZ:
-      p_dir = Vector3d(0, 0, -1);
-      s_dir = Vector3d(-1, 0, 0);
-      t_dir = Vector3d(0, 1, 0);
-      break;
-    default:
-      assert(0);
-      p_dir = Vector3d(1, 0, 0);
-      s_dir = Vector3d(0, 0, -1);
-      t_dir = Vector3d(0, 1, 0);
+        s_dir = Vector3d(0, 0, -1);
+        t_dir = Vector3d(0, 1, 0);
+        break;
+      case CF_NEGX:
+        p_dir = Vector3d(-1, 0, 0);
+        s_dir = Vector3d(0, 0, 1);
+        t_dir = Vector3d(0, 1, 0);
+        break;
+      case CF_POSY:
+        p_dir = Vector3d(0, 1, 0);
+        s_dir = Vector3d(0, 0, 1);
+        t_dir = Vector3d(1, 0, 0);
+        break;
+      case CF_NEGY:
+        p_dir = Vector3d(0, -1, 0);
+        s_dir = Vector3d(0, 0, 1);
+        t_dir = Vector3d(-1, 0, 0);
+        break;
+      case CF_POSZ:
+        p_dir = Vector3d(0, 0, 1);
+        s_dir = Vector3d(1, 0, 0);
+        t_dir = Vector3d(0, 1, 0);
+        break;
+      case CF_NEGZ:
+        p_dir = Vector3d(0, 0, -1);
+        s_dir = Vector3d(-1, 0, 0);
+        t_dir = Vector3d(0, 1, 0);
+        break;
+      default:
+        assert(0);
+        p_dir = Vector3d(1, 0, 0);
+        s_dir = Vector3d(0, 0, -1);
+        t_dir = Vector3d(0, 1, 0);
+    }
   }
-}
 }
 }
 

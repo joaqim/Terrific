@@ -2,20 +2,26 @@
 
 #include "xs_Float.h"
 
-
 #if 0
-typedef int int8;
-typedef unsigned int uint8;
-typedef int int16;
-typedef unsigned int uint16;
+#ifndef _xs_Types_
+#define _xs_Types_
+#include <stdint.h>
+typedef char int8;
+typedef unsigned char uint8;
+typedef short int16;
+typedef unsigned short uint16;
 typedef long int32;
 typedef unsigned long uint32;
 typedef float real32;
 typedef double real64;
 #endif
+#endif
 
 #include <Magnum/Types.h>
+typedef Magnum::UnsignedByte UnsignedByte; 
+typedef Magnum::UnsignedShort UnsignedShort; 
 typedef Magnum::UnsignedInt UnsignedInt; 
+typedef Magnum::UnsignedLong UnsignedLong; 
 
 #include <Magnum/Math/Vector.h>
 

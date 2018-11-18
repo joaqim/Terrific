@@ -23,6 +23,8 @@
 #include <Terrific/Geometry/SphericalVoronoi.h>
 #include <Terrific/Math/Types.h>
 
+#include <taskflow/taskflow.hpp>
+
 namespace Terrific {
   namespace GL {
 
@@ -41,7 +43,6 @@ namespace Terrific {
         std::vector<Vector3> const &vertices,
         std::vector<Vector3> const &normals,
         std::vector<UnsignedInt> const &indices,
-        std::vector<Color3> const &colors,
         std::vector<Vector2> const &uvs);
 
     void setTexture(Magnum::GL::Texture2D &texture) {

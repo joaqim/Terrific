@@ -42,6 +42,7 @@ flags = [
     '-I/home/jq/projects/Terrific/src/Terrific/Geometry/../..',
     '-I/home/jq/projects/Terrific/src/Terrific/Math/../..',
     '-I/home/jq/projects/Terrific/third_party/include',
+    '-I/home/jq/projects/Terrific/third_party/repos/cpp-taskflow',
     '-I/tmp/tmp5vRSvu',
     '-I/tmp/tmp5vRSvu/src',
     '-Wall',

@@ -15,6 +15,7 @@
 namespace Terrific {
   namespace Geometry {
 
+
     class HalfEdge;
     class Cell;
     class Vertex;
@@ -166,11 +167,15 @@ namespace Terrific {
 
     class SphericalVoronoi {
    public:
-      SphericalVoronoi(const std::vector<Vector3d>& directions, bool const debugMode_=false);
+      SphericalVoronoi(std::vector<Vector3d> const &directions, bool const debugMode_=false);
+      SphericalVoronoi(bool const debugMode_=false);
+      void initialize(std::vector<Vector3d> const &directions);
 
+      static std::vector<Vector3d> generatePoints(std::size_t const count);
       void setDebugMode(bool debugMode);
 
       bool isFinished() const;
+      bool isInitialized() const;
       void step(double maxDeltaXi);
       void solve(std::function<void(int)> cb = nullptr);       // step until finished
 
@@ -187,7 +192,6 @@ namespace Terrific {
       }
 
    protected:
-      bool debugMode;
 
       void dumpBeachState(std::ostream& stream);
 
@@ -208,9 +212,12 @@ namespace Terrific {
       static Point thetaToPoint(double theta, bool positive, double xi, double theta1, double phi1);
       static Point phiToPoint(double phi, double xi, double theta1, double phi1);
       static bool arcsIntersection(const BeachArc& arc1, const BeachArc& arc2, double xi, Point& oPoint);
+      static bool comparePhi(double const lhs, double const rhs);
 
-      int nbSteps;
       Math::SphericalLine scanLine;
+      int nbSteps;
+      bool debugMode;
+      bool initialized{false};
 
       constexpr static double eps = 1e-5;
 

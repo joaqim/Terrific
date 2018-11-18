@@ -1,12 +1,53 @@
 #include "SphericalVoronoi.h"
 
+
 #include <iostream>
+#include <random>
+#include <cstdlib>
 
 namespace Terrific {
 namespace Geometry {
 
 using std::cout;
 using std::endl;
+
+//#define SEEDED
+std::vector<Vector3d> SphericalVoronoi::generatePoints(std::size_t const count) {
+  std::vector<Vector3d> points;
+
+  std::random_device rd;
+#ifdef SEEDED
+  std::mt19937 rng(145);
+#else
+  //std::seed_seq seed{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
+  std::mt19937 rng{rd()};
+  rng.discard(700000);
+  //NOTE: Perform 70000 generations, much slower but improves randomness.
+  // https://codereview.stackexchange.com/a/109518
+  // ~12.7x slower ( 66.5 microseconds -> 846 microseconds)
+#endif
+
+
+  std::uniform_real_distribution<> heightDistribution(-1.f, 1.f);
+  std::uniform_real_distribution<> angleDistribution(0, 2 * M_PI);
+
+  using Magnum::Math::asin;
+  using Magnum::Math::cos;
+  using Magnum::Math::sin;
+  using Magnum::Math::Rad;
+
+  for (size_t i = 0; i < count; i++) {
+    double z = heightDistribution(rng);
+    auto const phi = Rad<double>(angleDistribution(rng));
+    auto theta = asin(z);
+    float x = cos(theta) * cos(phi);
+    float y = cos(theta) * sin(phi);
+
+    points.push_back(Vector3d(x, y, z));
+  }
+
+  return points;
+}
 
 Cell::Cell (uint32_t i, Point const &p) : index(i), point(p) {}
 void Cell::reset() {
@@ -113,34 +154,18 @@ bool SphericalVoronoi::isArcOnBeach(const BeachArc_ptr& arc) const {
 
 
 void SphericalVoronoi::addNewSiteEvent(const SiteEvent& event) {
-  /*
-    using namespace std;
-    auto it = lower_bound(siteEventQueue.begin(), siteEventQueue.end(), event);
-    siteEventQueue.insert(it, event);
-  */
   siteEventQueue.push_back(event);
   std::push_heap(siteEventQueue.begin(), siteEventQueue.end(), std::greater_equal<>{});
 }
 
 void SphericalVoronoi::addNewCircleEvent(const std::shared_ptr<CircleEvent>& event) {
-  /*
-    using namespace std;
-    auto it = lower_bound(circleEventQueue.begin(), circleEventQueue.end(), event, compare_CircleEvent_priority());
-    circleEventQueue.insert(it, event);
-  */
   circleEventQueue.push_back(event);
   std::push_heap(circleEventQueue.begin(), circleEventQueue.end(), compare_CircleEvent_priority{});
 }
 
 void SphericalVoronoi::removeCircleEvent(const std::shared_ptr<CircleEvent>& event)
 {
-  /*
-    using namespace std;
-    auto it = find(circleEventQueue.begin(), circleEventQueue.end(), event);
-    assert(it != circleEventQueue.end());
-    circleEventQueue.erase(it);
-  */
-  circleEventDeletedEvents.insert(event);
+    circleEventDeletedEvents.insert(event);
 }
 
 std::shared_ptr<CircleEvent> SphericalVoronoi::getCircleEvent() {
@@ -177,7 +202,7 @@ size_t SphericalVoronoi::getCircleEventQueueSize() const {
 
 #define SV_DEBUG(...)   do { if (debugMode) { __VA_ARGS__; } } while(0)
 
-bool comparePhi(double const lhs, double const rhs) {
+bool SphericalVoronoi::comparePhi(double const lhs, double const rhs) {
   return(static_cast<int>(lhs*1000.0) == static_cast<int>(rhs*1000.0));
 }
 
@@ -197,19 +222,20 @@ struct IndexedDirection
 }
 
 
-SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3d>& directions, bool const debugMode_)
+SphericalVoronoi::SphericalVoronoi(bool const debugMode_)
     : scanLine(), nbSteps(0), debugMode(debugMode_) {
+}
+
+void SphericalVoronoi::initialize(const std::vector<Vector3d>& directions) {
   using namespace std;
 
   std::vector<std::pair<int, Vector3d>> sortedDirections;
-  for (auto& dir : directions)
-  {
+  for (auto& dir : directions) {
     sortedDirections.push_back(std::pair<int, Vector3d>(sortedDirections.size(), dir));
   }
 
   sort(sortedDirections.begin(), sortedDirections.end(), [](const std::pair<int, Vector3d>& a, const std::pair<int, Vector3d>& b) { return a.second.z() > b.second.z(); });
-  for (size_t i=0; i<sortedDirections.size(); ++i)
-  {
+  for (size_t i=0; i<sortedDirections.size(); ++i) {
     auto& d = sortedDirections[i].second;
     //if (Math::length(d) < eps) continue;
     if (d.length() < eps) continue;
@@ -240,10 +266,20 @@ SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3d>& directions, bool
 
     addNewSiteEvent(SiteEvent(c));
   }
+  initialized = true;
+}
+
+SphericalVoronoi::SphericalVoronoi(const std::vector<Vector3d>& directions, bool const debugMode_)
+    : scanLine(), nbSteps(0), debugMode(debugMode_) {
+  initialize(directions);
 }
 
 bool SphericalVoronoi::isFinished() const {
   return siteEventQueue.size() == 0 && getCircleEventQueueSize() == 0;
+}
+
+bool SphericalVoronoi::isInitialized() const {
+  return initialized;
 }
 
 void SphericalVoronoi::dumpBeachState(std::ostream& stream) {
@@ -256,11 +292,13 @@ void SphericalVoronoi::dumpBeachState(std::ostream& stream) {
     stream << arc->pCell->index;
     if (arc->circleEvent)
     {
+#ifdef TERRIFIC_DEBUG
       auto itPrevArc = getPrevArcOnBeach(itArc);
       auto itNextArc = getNextArcOnBeach(itArc);
       assert(arc->circleEvent->arc_j == arc);
       assert(arc->circleEvent->arc_i == *itPrevArc);
       assert(arc->circleEvent->arc_k == *itNextArc);
+#endif
       stream << "*";
     }
     stream << ",";

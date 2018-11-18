@@ -34,7 +34,7 @@ set_target_properties(TerrificGL PROPERTIES
 	DEBUG_POSTFIX "-d" 
 	FOLDER "Terrific/GL")
 
-target_link_libraries(TerrificGL Terrific)
+target_link_libraries(TerrificGL Terrific Terrific::Geometry)
 
 install(TARGETS TerrificGL
 	RUNTIME DESTINATION ${TERRIFIC_BINARY_INSTALL_DIR}

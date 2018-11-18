@@ -45,7 +45,7 @@ install(FILES ${TerrificGeometry_HEADERS} DESTINATION ${TERRIFIC_INCLUDE_INSTALL
 add_library(Terrific::Geometry ALIAS TerrificGeometry)
 
 if(BUILD_TESTS)
-  #	add_subdirectory(Test)
+  add_subdirectory(Test)
 endif()
 
 

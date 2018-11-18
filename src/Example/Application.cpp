@@ -20,61 +20,27 @@
 namespace Magnum {
 
 
-std::vector<Vector3d> generatePoints(size_t const count) {
-  std::vector<Vector3d> points;
-
-  std::random_device const rd;
-#ifdef SEEDED
-  std::mt19937 rng(145);
-#else
-  std::mt19937 rng(rd());
-  rng.discard(700000);
-#endif
-
-  //NOTE: Perform 70000 generations, much slower but improves randomness.
-  // https://codereview.stackexchange.com/a/109518
 
 
-  std::uniform_real_distribution<> heightDistribution(-1.f, 1.f);
-  std::uniform_real_distribution<> angleDistribution(0, 2 * M_PI);
-  
-  using Magnum::Math::asin;
-  using Magnum::Math::cos;
-  using Magnum::Math::sin;
-  using Magnum::Math::Rad;
-
-  for (size_t i = 0; i < count; i++) {
-    double z = heightDistribution(rng);
-    auto const phi = Rad<double>(angleDistribution(rng));
-    auto theta = asin(z);
-    float x = cos(theta) * cos(phi);
-    float y = cos(theta) * sin(phi);
-
-    points.push_back(Vector3d(x, y, z));
+  void Application::CreateColors(std::size_t const count) {
+    srand (time(NULL));
+    for (size_t i = 0; i < count; i++) {
+      _colors.emplace_back(rand() % 200 + 50, rand() % 200 + 55, rand() % 200 + 50);}
+    //std::cout << rand() % 200 + 50 << ", " << rand() % 200 + 55 << ", " << rand() % 200 + 50 << "\n";
+    //std::cout << rand() % 200 + 50 << ", " << rand() % 200 + 55 << ", " << rand() % 200 + 50 << "\n";
   }
 
-  return points;
-}
+  template<class T>
+  Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Math::Vector3<T> const &p2, Magnum::Math::Vector3<T> const &p3) {
+    Vector3f const u{p2 - p1};
+    Vector3f const v{p3 - p1};
 
-void Application::CreateColors(std::size_t const count) {
-  srand (time(NULL));
-  for (size_t i = 0; i < count; i++) {
-    _colors.emplace_back(rand() % 200 + 50, rand() % 200 + 55, rand() % 200 + 50);}
-  //std::cout << rand() % 200 + 50 << ", " << rand() % 200 + 55 << ", " << rand() % 200 + 50 << "\n";
-  //std::cout << rand() % 200 + 50 << ", " << rand() % 200 + 55 << ", " << rand() % 200 + 50 << "\n";
-}
-
-template<class T>
-Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Math::Vector3<T> const &p2, Magnum::Math::Vector3<T> const &p3) {
-  Vector3f const u{p2 - p1};
-  Vector3f const v{p3 - p1};
-
-  Vector3f n;
-  n.x() = u.y() * v.z() - u.z() * v.y();
-  n.y() = u.z() * v.x() - u.x() * v.z();
-  n.z() = u.x() * v.y() - u.y() * v.x();
-  return n;
-}
+    Vector3f n;
+    n.x() = u.y() * v.z() - u.z() * v.y();
+    n.y() = u.z() * v.x() - u.x() * v.z();
+    n.z() = u.x() * v.y() - u.y() * v.x();
+    return n;
+  }
 
   using Terrific::Geometry::HalfEdge_ptr;
   using Terrific::Geometry::Cell_ptr;
@@ -300,7 +266,6 @@ Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Mat
       TERRIFIC_CORE("\t Colors Indices: {0}", meshColorsIndices.size());
 #endif
 
-
       //meshIndices = Magnum::MeshTools::removeDuplicates(meshVertices);
       //std::cout << meshIndices.size() << std::endl;
 #endif
@@ -336,7 +301,6 @@ Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Mat
     // log Log
     CORRADE_ASSERT(Terrific::Utility::Log::init() == EXIT_SUCCESS, "Failed to initialize Terrific::Utility::Log",);
     TERRIFIC_INFO("Application starting up {0}", 1);
-    exit();
 
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
@@ -368,7 +332,7 @@ Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Mat
 #endif
     }
 
-    auto const genPoints = generatePoints(180);
+    auto const genPoints = Terrific::Geometry::SphericalVoronoi::generatePoints(180);
     //_pSv = new SphericalVoronoi(genPoints, false);
     _pSv = new Terrific::Planet(*_pManipulator, &_drawables, genPoints, false);
 #if 0
@@ -422,7 +386,6 @@ Vector3f CalculateSurfaceNormal (Magnum::Math::Vector3<T> const &p1, Magnum::Mat
                        meshVertices,
                        meshNormals,
                        meshIndices,
-                       meshColors,
                        meshUVs);
 
     const Utility::Resource rs{"data"};

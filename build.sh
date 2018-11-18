@@ -25,6 +25,7 @@ if [ "$1" == "ycm" ]; then
 fi
 
 cmake .. -G "Ninja" \
+	-DCMAKE_BUILD_TYPE=Debug \
 	$CMAKE_FLAGS 
 cmake --build . --config Debug
 
@@ -32,6 +33,12 @@ if [ "$1" == "run" ]; then
     ./src/Example/MyApplication
     #cd src/Terrific/System/Test && ./SystemTest
 fi
+
+function benchmark {
+	time .$1 > /dev/null
+}
+
+./src/Terrific/Geometry/Test/SphericalVoronoiTest
 
 #exit 24
 exit $?

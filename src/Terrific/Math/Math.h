@@ -108,10 +108,12 @@ namespace Terrific {
     double y2 = rhs.y();
 
     auto val1 = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+#ifdef TERRIFIC_DEBUG
     auto val2 = abs(lhs.length() - rhs.length());
-    //auto val1 = 1.f;
-
     assert(val1 == val2);
+#endif
+
+    //auto val1 = 1.f;
     return val1;
   }
 
@@ -119,6 +121,11 @@ namespace Terrific {
   class AABB;
   class Plane;
   class Point;
+
+  std::vector<Vector3d> splitSphericalLineSegment(const Point& start, const Point& end, double deltaAngle);
+  double lagrangeInterpolate(double x, const std::vector<double>& xArray, const std::vector<double>& yArray);
+  double interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<double>& values);
+  double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2);
 
   inline Vector3d getTransformPosition(const Matrix4d& transform) {
     return Vector3d(transform[3][0], transform[3][1], transform[3][2]);
@@ -148,6 +155,8 @@ namespace Terrific {
 
   typedef std::bitset<CF_MAX> CubeFaceBitSet;
 
+  void faceAxisDirection(ECubeFace face, Vector3d& s_dir, Vector3d& t_dir, Vector3d& p_dir);
+
   class Point
   {
  public:
@@ -172,203 +181,205 @@ namespace Terrific {
 
     void calculateCubeSet() {
 
-    }
+     }
 
 
-    //NOTE: Redefinition when using double instead of double
-    /*
-      Point(const F3& pos)
-      : Point(pos.x(), pos.y(), pos.z)
+     //NOTE: Redefinition when using double instead of double
+     /*
+       Point(const F3& pos)
+       : Point(pos.x(), pos.y(), pos.z)
+       {
+       }
+     */
+
+     double theta;
+     double phi;
+     Vector3d position;
+
+     std::tuple<Vector3d, CubeFaceBitSet> cubeCoord() const;
+
+     Vector3d tangent() const;
+     Vector3d binormal() const;
+
+     void assignDirection(const Vector3d& direction)
+     {
+       double r = length(direction);
+       //double r = direction.length();
+       assert(r > 0);
+       theta = acos(Magnum::Math::clamp<double>(direction.z() / r, -1.0, 1.0));
+#ifdef TERRIFIC_DEBUG
+       auto theta2 = acos(clamp<double>(direction.z() / r, -1.0, 1.0));
+       assert(theta == theta2);
+#endif
+
+       phi = atan2(direction.y(), direction.x());
+       position = direction / r;
+     }
+
+     double sphericalDistance(const Point& p2) const
+     {
+       double dot = Magnum::Math::dot(position, p2.position);
+       double result = acos(clamp<double>(dot, -1.0, 1.0));
+       return result;
+     }
+
+     bool equalWithEps(const Point& p2, double eps) const
+     {
+       return std::abs(position.x() - p2.position.x()) < eps &&
+           std::abs(position.y() - p2.position.y()) < eps &&
+           std::abs(position.z() - p2.position.z()) < eps;
+     }
+
+     bool operator < (const Point& p2) const
+     {
+       return (theta < p2.theta) || (theta == p2.theta && phi < p2.phi);
+     }
+
+     friend std::ostream& operator << (std::ostream& stream, const Point& p)
       {
+        return stream << p.theta << "," << p.phi;
       }
-    */
 
-    double theta;
-    double phi;
-    Vector3d position;
+      template <class Archive>
+          void serialize(Archive& ar)
+      {
+        ar(theta, phi, position.x(), position.y(), position.z());
+      }
 
-    std::tuple<Vector3d, CubeFaceBitSet> cubeCoord() const;
+   private:
+      void computePosition()
+      {
+        position = Vector3d(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+      }
+    };
 
-    Vector3d tangent() const;
-    Vector3d binormal() const;
-
-    void assignDirection(const Vector3d& direction)
+    namespace Util
     {
-      double r = length(direction);
-      //double r = direction.length();
-      assert(r > 0);
-      theta = acos(Magnum::Math::clamp<double>(direction.z() / r, -1.0, 1.0));
-      auto theta2 = acos(clamp<double>(direction.z() / r, -1.0, 1.0));
-      assert(theta == theta2);
+      extern std::vector<Vector3d> splitSphericalLineSegment(const Point& start, const Point& end, double deltaAngle = M_PI / 180.0);
+      extern double lagrangeInterpolate(double x, const std::vector<double>& xArray, const std::vector<double>& yArray);
+      extern double interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<double>& values);
+      extern double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2);
 
-      phi = atan2(direction.y(), direction.x());
-      position = direction / r;
+      extern void faceAxisDirection(ECubeFace face, Vector3d& s_dir, Vector3d& t_dir, Vector3d& p_dir);
+
+      inline double sqrDistance(Vector2d a, Vector2d b)
+      {
+        auto p = a - b;
+        return dot(p, p);
+      }
     }
 
-    double sphericalDistance(const Point& p2) const
+    class SphericalLine
     {
-      double dot = Magnum::Math::dot(position, p2.position);
-      double result = acos(clamp<double>(dot, -1.0, 1.0));
-      return result;
-    }
+   public:
+   SphericalLine() : direction(Vector3d(0, 0, 1)), xi(0) {}
+   SphericalLine(const Vector3d& direction_, double xi_) : direction(normalize(direction_)), xi(xi_) {}
 
-    bool equalWithEps(const Point& p2, double eps) const
+      Vector3d direction;
+      double xi;
+    };
+
+    class AABB
     {
-      return std::abs(position.x() - p2.position.x()) < eps &&
-          std::abs(position.y() - p2.position.y()) < eps &&
-          std::abs(position.z() - p2.position.z()) < eps;
-    }
+   public:
+      AABB();
+      AABB(const Vector3d& p);
+      AABB(const Vector3d& min, const Vector3d& max);
 
-    bool operator < (const Point& p2) const
+      void reset();
+      bool isValid() const;
+      bool isEmpty() const;
+
+      const Vector3d& min() const { assert(isValid()); return m_min; }
+      const Vector3d& max() const { assert(isValid()); return m_max; }
+
+      Vector3d center() const { assert(isValid()); return (m_min + m_max) * 0.5f; }
+      Vector3d size() const { assert(isValid()); return m_max - m_min; }
+      Vector3d extent() const { return size() * 0.5f; }
+
+      void getMajorVertices(const Vector3d& direction, Vector3d& P, Vector3d& N) const;
+
+      void unionWith(const Vector3d& p);
+      void unionWith(const AABB& aabb);
+      bool contains(const Vector3d& p) const;
+      bool contains(const AABB& aabb) const;
+
+      bool operator == (const AABB& aabb) const;
+   private:
+      Vector3d m_min, m_max;
+    };
+
+    class Ray
     {
-      return (theta < p2.theta) || (theta == p2.theta && phi < p2.phi);
-    }
+   public:
+      Ray();
+      Ray(const Vector3d& origin, const Vector3d& direction);
 
-    friend std::ostream& operator << (std::ostream& stream, const Point& p)
+      inline const Vector3d& origin() const { return m_origin; }
+      inline void setOrigin(const Vector3d& origin) { m_origin = origin; }
+      inline const Vector3d& direction() const { return m_direction; }
+      inline void setDirection(const Vector3d& direction) { m_direction = normalize(direction); }
+      inline void setNormalizedDirection(const Vector3d& direction) { m_direction = direction; }
+
+   private:
+      Vector3d m_origin;
+      Vector3d m_direction;
+    };
+
+    class Plane
     {
-      return stream << p.theta << "," << p.phi;
-    }
+   public:
+      Plane();
+      Plane(const Plane& other);
+      Plane(const Vector3d& normal, double distance);
+      Plane(const Vector4d& vec);
+      Plane(const Vector3d& a, const Vector3d& b, const Vector3d& c);
 
-    template <class Archive>
-        void serialize(Archive& ar)
+      const Vector3d& normal() const { return m_normal; }
+      void setNormal(const Vector3d& normal) { m_normal = normal; }
+      double distance() const { return m_distance; }
+      void setDistance(double distance) { m_distance = distance; }
+
+      Plane normalize() const;
+      Plane transform(const Matrix4d transform) const;
+      double distance(const Vector3d& point) const;
+      bool pointOnSide(const Vector3d& point) const;
+      bool lineIntersection(const Vector3d& ptA, const Vector3d& ptB, Vector3d& resultDestination) const;
+
+   private:
+      Vector3d m_normal;
+      double m_distance;
+    };
+
+    bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Plane& planeC, Vector3d& result);
+
+    bool rayAabbIntersection(const Ray& ray, const AABB& aabb);
+
+    template <typename T>
+        class PositionT
     {
-      ar(theta, phi, position.x(), position.y(), position.z());
-    }
+   public:
+      //using Vec3 = tvec3<T>;
+      using Vector3d = Magnum::Math::Vector3<T>;
+      PositionT();
+      PositionT(ECubeFace face, T s, T t, T p);
+      PositionT(ECubeFace face, const Vector3d& stp);
 
- private:
-    void computePosition()
-    {
-      position = Vector3d(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-    }
-  };
+      ECubeFace face() const { return m_face; }
+      const Vector3d& surfacePoint() const { return m_surfacePoint; }
+      Vector3d stpCoords() const;
+      const Vector3d& spacePosition() const { return m_spacePosition; }
 
-  namespace Util
-  {
-    extern std::vector<Vector3d> splitSphericalLineSegment(const Point& start, const Point& end, double deltaAngle = M_PI / 180.0);
-    extern double lagrangeInterpolate(double x, const std::vector<double>& xArray, const std::vector<double>& yArray);
-    extern double interpolateSphericalSamples(const Point& p0, const std::vector<Point>& points, const std::vector<double>& values);
-    extern double computeTriangleArea(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2);
+   private:
+      ECubeFace m_face;
+      T m_height;
+      Vector3d m_surfacePoint;
+      Vector3d m_spacePosition;
+    };
 
-    extern void faceAxisDirection(ECubeFace face, Vector3d& s_dir, Vector3d& t_dir, Vector3d& p_dir);
-
-    inline double sqrDistance(Vector2d a, Vector2d b)
-    {
-      auto p = a - b;
-      return dot(p, p);
-    }
-  }
-
-  class SphericalLine
-  {
- public:
- SphericalLine() : direction(Vector3d(0, 0, 1)), xi(0) {}
- SphericalLine(const Vector3d& direction_, double xi_) : direction(normalize(direction_)), xi(xi_) {}
-
-    Vector3d direction;
-    double xi;
-  };
-
-  class AABB
-  {
- public:
-    AABB();
-    AABB(const Vector3d& p);
-    AABB(const Vector3d& min, const Vector3d& max);
-
-    void reset();
-    bool isValid() const;
-    bool isEmpty() const;
-
-    const Vector3d& min() const { assert(isValid()); return m_min; }
-    const Vector3d& max() const { assert(isValid()); return m_max; }
-
-    Vector3d center() const { assert(isValid()); return (m_min + m_max) * 0.5f; }
-    Vector3d size() const { assert(isValid()); return m_max - m_min; }
-    Vector3d extent() const { return size() * 0.5f; }
-
-    void getMajorVertices(const Vector3d& direction, Vector3d& P, Vector3d& N) const;
-
-    void unionWith(const Vector3d& p);
-    void unionWith(const AABB& aabb);
-    bool contains(const Vector3d& p) const;
-    bool contains(const AABB& aabb) const;
-
-    bool operator == (const AABB& aabb) const;
- private:
-    Vector3d m_min, m_max;
-  };
-
-  class Ray
-  {
- public:
-    Ray();
-    Ray(const Vector3d& origin, const Vector3d& direction);
-
-    inline const Vector3d& origin() const { return m_origin; }
-    inline void setOrigin(const Vector3d& origin) { m_origin = origin; }
-    inline const Vector3d& direction() const { return m_direction; }
-    inline void setDirection(const Vector3d& direction) { m_direction = normalize(direction); }
-    inline void setNormalizedDirection(const Vector3d& direction) { m_direction = direction; }
-
- private:
-    Vector3d m_origin;
-    Vector3d m_direction;
-  };
-
-  class Plane
-  {
- public:
-    Plane();
-    Plane(const Plane& other);
-    Plane(const Vector3d& normal, double distance);
-    Plane(const Vector4d& vec);
-    Plane(const Vector3d& a, const Vector3d& b, const Vector3d& c);
-
-    const Vector3d& normal() const { return m_normal; }
-    void setNormal(const Vector3d& normal) { m_normal = normal; }
-    double distance() const { return m_distance; }
-    void setDistance(double distance) { m_distance = distance; }
-
-    Plane normalize() const;
-    Plane transform(const Matrix4d transform) const;
-    double distance(const Vector3d& point) const;
-    bool pointOnSide(const Vector3d& point) const;
-    bool lineIntersection(const Vector3d& ptA, const Vector3d& ptB, Vector3d& resultDestination) const;
-
- private:
-    Vector3d m_normal;
-    double m_distance;
-  };
-
-  bool threePlanesIntersection(const Plane& planeA, const Plane& planeB, const Plane& planeC, Vector3d& result);
-
-  bool rayAabbIntersection(const Ray& ray, const AABB& aabb);
-
-  template <typename T>
-      class PositionT
-  {
- public:
-    //using Vec3 = tvec3<T>;
-    using Vector3d = Magnum::Math::Vector3<T>;
-    PositionT();
-    PositionT(ECubeFace face, T s, T t, T p);
-    PositionT(ECubeFace face, const Vector3d& stp);
-
-    ECubeFace face() const { return m_face; }
-    const Vector3d& surfacePoint() const { return m_surfacePoint; }
-    Vector3d stpCoords() const;
-    const Vector3d& spacePosition() const { return m_spacePosition; }
-
- private:
-    ECubeFace m_face;
-    T m_height;
-    Vector3d m_surfacePoint;
-    Vector3d m_spacePosition;
-  };
-
-  typedef PositionT<float> PositionF;
-  typedef PositionT<double> Position;
-  typedef PositionT<double> PositionD;
+    typedef PositionT<float> PositionF;
+    typedef PositionT<double> Position;
+    typedef PositionT<double> PositionD;
   }
 }
 

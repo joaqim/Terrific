@@ -15,7 +15,6 @@ void SphereDrawable::generateMesh(
     std::vector<Vector3> const &vertices,
     std::vector<Vector3> const &normals,
     std::vector<UnsignedInt> const &indices,
-    std::vector<Color3> const &colors,
     std::vector<Vector2> const &uvs) {
 #if 0 // Testing icosphereSolid
   const Trade::MeshData3D sphere = Primitives::icosphereSolid(2);
@@ -63,18 +62,19 @@ _mesh
 .addVertexBuffer(_vertexBuffer, 0, Shaders::Phong::Position{});
 
 _mesh.setCount(verticesCount);
-  
 }
 
 void SphereDrawable::draw(const Matrix4& transformationMatrix, SceneGraph::Camera3D &camera) {
   using namespace Magnum::Math::Literals;
+  
   _phongShader
       .setDiffuseColor(0xa5c9ea_rgbf)
-      .bindDiffuseTexture(*_texture)
       .setLightPosition(camera.cameraMatrix().transformPoint({-17.0f, 17.0f, 17.0f}))
       .setTransformationMatrix(transformationMatrix)
       .setNormalMatrix(transformationMatrix.rotationScaling())
       .setProjectionMatrix(camera.projectionMatrix());
+  if(_texture) 
+    _phongShader.bindDiffuseTexture(*_texture);
 
   _mesh.draw(_phongShader);
 }

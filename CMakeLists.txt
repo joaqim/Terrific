@@ -74,11 +74,14 @@ add_subdirectory("third_party/repos/sol2")
 
 include_directories("third_party/include")
 
+# cpp-taskflow
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/third_party/repos/cpp-taskflow)
+
 # Installation paths
 
 set(TERRIFIC_BINARY_INSTALL_DIR bin)
 set(TERRIFIC_LIBRARY_INSTALL_DIR lib${LIB_SUFFIX})
-set(TERRIFIC_DATA_INSTALL_DIR ${TERRIFIC_INCLUDE_INSTALL_PREFIX}/share/magnum)
+set(TERRIFIC_DATA_INSTALL_DIR ${TERRIFIC_INCLUDE_INSTALL_PREFIX}/share/terrific)
 set(TERRIFIC_CMAKE_MODULE_INSTALL_DIR ${TERRIFIC_INCLUDE_INSTALL_PREFIX}/share/cmake/Terrific)
 set(TERRIFIC_INCLUDE_INSTALL_DIR ${TERRIFIC_INCLUDE_INSTALL_PREFIX}/include/Terrific)
 set(TERRIFIC_EXTERNAL_INCLUDE_INSTALL_DIR ${TERRIFIC_INCLUDE_INSTALL_PREFIX}/include/TerrificExternal)
